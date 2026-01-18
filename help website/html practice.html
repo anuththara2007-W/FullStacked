@@ -1,0 +1,1737 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML5 Ultimate Master | FullStacked</title>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- 1. CORE VARIABLES --- */
+      :root {
+        --bg-dark: #050505;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-blur: 40px;
+        --text-main: #ffffff;
+        --text-dim: #94a3b8;
+        --accent: #e34f26; /* HTML Orange */
+        --accent-glow: rgba(227, 79, 38, 0.4);
+        --nav-bg: rgba(15, 15, 15, 0.8);
+        --code-bg: #111;
+        --input-bg: rgba(0, 0, 0, 0.5);
+      }
+
+      body.light-mode {
+        --bg-dark: #f0f2f5;
+        --glass-bg: rgba(255, 255, 255, 0.6);
+        --glass-border: rgba(0, 0, 0, 0.05);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #e34f26;
+        --nav-bg: rgba(255, 255, 255, 0.85);
+        --code-bg: #ffffff;
+        --input-bg: rgba(255, 255, 255, 0.9);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        background-image: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop");
+        background-size: cover;
+        background-attachment: fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        overflow-x: hidden; /* Main page scroll is hidden initially, handled by layout */
+        height: 100vh;
+        width: 100vw;
+        transition:
+          background 0.5s,
+          color 0.5s;
+      }
+      #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(2, 2, 2, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: -2;
+      }
+
+      /* --- UI COMPONENTS --- */
+      .loader-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .loader-text {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        color: white;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      /* Logo & Controls */
+      .fixed-logo {
+        position: fixed;
+        top: 10px;
+        left: 40px;
+        z-index: 1002;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 16px;
+        border-radius: 50px;
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--glass-border);
+      }
+      .fixed-logo i {
+        color: var(--accent);
+      }
+      .right-controls {
+        position: fixed;
+        top: 15px;
+        right: 40px;
+        display: flex;
+        gap: 12px;
+        z-index: 1002;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      /* Nav */
+      .glass-nav-container {
+        position: fixed;
+        top: 10px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        pointer-events: none;
+        transition: transform 0.4s ease;
+      }
+      .glass-nav-container.nav-hidden {
+        transform: translateY(-200%);
+      }
+      .glass-nav {
+        pointer-events: auto;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        padding: 8px 10px;
+        border-radius: 100px;
+        display: flex;
+        gap: 5px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link {
+        text-decoration: none;
+        position: relative;
+        color: var(--text-dim);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 50px;
+        transition: 0.3s;
+      }
+      .nav-link.active {
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* --- LAYOUT SECTIONS --- */
+      .velocity-content {
+        width: 100%;
+      }
+
+      /* 1. IDE SECTION (100vh) */
+      .ide-section {
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 60px;
+        position: relative;
+      }
+
+      .ide-window {
+        width: 95%;
+        max-width: 1600px;
+        height: 85vh;
+        top: 7px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+        position: relative;
+        z-index: 10;
+      }
+
+      .title-bar {
+        height: 40px;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .window-controls {
+        position: absolute;
+        left: 15px;
+        display: flex;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .red {
+        background: #ff5f56;
+      }
+      .yellow {
+        background: #ffbd2e;
+      }
+      .green {
+        background: #27c93f;
+      }
+
+      .ide-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: rgba(0, 0, 0, 0.2);
+        border-right: 1px solid var(--glass-border);
+        padding: 20px;
+        display: none;
+        overflow-y: auto;
+      }
+      @media (min-width: 900px) {
+        .sidebar {
+          display: block;
+        }
+      }
+      .file-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-main);
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+      }
+      .file-item.active {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* --- EDITOR CONTENT SCROLL (FIXED) --- */
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .content-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 40px;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain; /* Prevents scroll chaining to parent */
+
+        /* Default: Hidden Scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color 0.3s;
+      }
+
+      /* Show Scrollbar ONLY on Hover */
+      .content-scroll:hover {
+        scrollbar-color: var(--accent) rgba(255, 255, 255, 0.1);
+      }
+
+      .content-scroll::-webkit-scrollbar {
+        width: 8px;
+      }
+      .content-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .content-scroll::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 4px;
+      }
+      .content-scroll:hover::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .content-scroll::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+      }
+
+      /* --- DEMOS STYLING --- */
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: var(--text-main);
+      }
+      h2 {
+        font-size: 1.5rem;
+        margin: 60px 0 20px;
+        color: var(--accent);
+        border-left: 4px solid var(--accent);
+        padding-left: 15px;
+      }
+      p {
+        color: var(--text-dim);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .demo-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 40px;
+      }
+      .control-panel {
+        background: var(--code-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        font-family: "JetBrains Mono", monospace;
+        color: #a9b7c6;
+      }
+      .visual-stage {
+        background: white;
+        color: black;
+        border-radius: 8px;
+        min-height: 180px;
+        padding: 30px;
+        border: 2px dashed var(--glass-border);
+        font-family: serif;
+        position: relative;
+        overflow: auto;
+      }
+
+      .row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+      }
+      label {
+        color: #888;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin-right: 5px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      input,
+      select {
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        color: white;
+        padding: 10px 14px;
+        border-radius: 6px;
+        outline: none;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.9rem;
+        min-width: 150px;
+      }
+      select option {
+        background-color: #111;
+        color: white;
+        padding: 10px;
+      }
+      body.light-mode select option {
+        background-color: #fff;
+        color: #111;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        background: transparent;
+        cursor: pointer;
+        width: 150px;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        background: #444;
+        height: 6px;
+        border-radius: 3px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        margin-top: -5px;
+        background-color: var(--accent);
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--accent-glow);
+      }
+
+      button.demo-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+        border: 1px solid var(--glass-border);
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 0.85rem;
+      }
+      button.demo-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      pre {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 8px;
+        color: #d4d4d4;
+        font-family: "JetBrains Mono", monospace;
+        overflow-x: auto;
+        margin-top: 15px;
+        border: 1px solid #333;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+      .tag {
+        color: #569cd6;
+      }
+      .attr {
+        color: #9cdcfe;
+      }
+      .val {
+        color: #ce9178;
+      }
+      .comment {
+        color: #6a9955;
+      }
+      .struct {
+        color: #808080;
+        opacity: 0.5;
+      }
+
+      /* --- EXAM SECTION --- */
+      .qa-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+        gap: 10px;
+      }
+      .qa-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid var(--accent);
+        padding: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .qa-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .qa-question {
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.95rem;
+        align-items: center;
+      }
+      .qa-answer {
+        display: none;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--glass-border);
+        color: var(--text-dim);
+        font-size: 0.9rem;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .qa-code {
+        color: #ce9178;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      /* --- 2. FOOTER SECTION (Below IDE) --- */
+      .footer-section {
+        background: var(--bg-dark);
+        border-top: 1px solid var(--glass-border);
+        position: relative;
+        z-index: 20;
+      }
+      .w3-cta {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 20px;
+        text-align: center;
+      }
+      .w3-btn {
+        background: #04aa6d;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 25px;
+        display: inline-block;
+        margin-top: 15px;
+        transition: 0.3s;
+      }
+      .w3-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .mega-footer {
+        padding: 40px 20px;
+        background: #010101;
+        border-top: 1px solid var(--glass-border);
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.5fr;
+        gap: 40px;
+        max-width: 1300px;
+        margin: 0 auto 40px;
+        text-align: left;
+      }
+      .f-brand h2 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+      }
+      .f-col h4 {
+        color: white;
+        margin-bottom: 20px;
+      }
+      .f-links {
+        list-style: none;
+        padding: 0;
+      }
+      .f-links li {
+        margin-bottom: 10px;
+      }
+      .f-links a {
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: 0.2s;
+      }
+      .f-links a:hover {
+        color: var(--accent);
+        padding-left: 5px;
+      }
+      .f-bottom {
+        border-top: 1px solid var(--glass-border);
+        padding-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+      .socials {
+        display: flex;
+        gap: 15px;
+      }
+      .s-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin: 0 5px;
+        transition: 0.3s;
+      }
+      .s-icon:hover {
+        background: var(--accent);
+        transform: translateY(-3px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader-container">
+      <div class="loader-text">HTML5 Environment</div>
+    </div>
+
+    <a href="index.html" class="fixed-logo"
+      ><i class="fas fa-layer-group"></i> FullStacked</a
+    >
+    <div class="right-controls">
+      <button class="control-btn" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="control-btn" id="fsToggle">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="html practice.html" class="nav-link">HTML</a>
+        <a href="css practice.html" class="nav-link">CSS</a>
+        <a href="js practise.html" class="nav-link">JS</a>
+        <a href="jquery practice.html" class="nav-link">Jquery</a>
+        <a href="bootstrap.html" class="nav-link">Bootstrap</a>
+        <a href="php practise.html" class="nav-link">PHP</a>
+      </nav>
+    </div>
+
+    <div class="velocity-content">
+      <section class="ide-section">
+        <div class="ide-window">
+          <div class="title-bar">
+            <div class="window-controls">
+              <div class="dot red"></div>
+              <div class="dot yellow"></div>
+              <div class="dot green"></div>
+            </div>
+            <span>html — Visual Studio Code</span>
+          </div>
+
+          <div class="ide-body">
+            <div class="sidebar">
+              <div
+                style="
+                  margin-bottom: 20px;
+                  font-size: 0.8rem;
+                  color: #666;
+                  font-weight: bold;
+                "
+              >
+                EXPLORER
+              </div>
+              <div class="file-item active">
+                <i class="fab fa-html5" style="color: #e34f26"></i> index.html
+              </div>
+              <div class="file-item">
+                <i class="fab fa-css3-alt" style="color: #3b82f6"></i> style.css
+              </div>
+              <div class="file-item">
+                <i class="fab fa-js" style="color: #facc15"></i> script.js
+              </div>
+            </div>
+
+            <div class="editor-area">
+              <div class="content-scroll" data-lenis-prevent>
+                <h1>HTML5 Interactive Master Class</h1>
+                <p>
+                  Manipulate the building blocks of the web in this live
+                  environment. Scroll here to explore 17 modules.
+                </p>
+
+                <h2>1. Text & Headings</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <select id="textTag" onchange="updText()">
+                        <option value="h1">h1 (Main Title)</option>
+                        <option value="h2">h2 (Subtitle)</option>
+                        <option value="p">p (Paragraph)</option>
+                        <option value="em">em (Italic)</option>
+                        <option value="strong">strong (Bold)</option>
+                        <option value="mark">mark (Highlight)</option>
+                      </select>
+                      <input
+                        type="text"
+                        id="textContent"
+                        value="FullStacked Learning"
+                        oninput="updText()"
+                        style="flex-grow: 1"
+                      />
+                    </div>
+                  </div>
+                  <div class="visual-stage" id="textVisual"></div>
+                  <pre id="textCode"></pre>
+                </div>
+
+                <h2>2. List Structures</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <button class="demo-btn" onclick="setList('ul')">
+                        Unordered
+                      </button>
+                      <button class="demo-btn" onclick="setList('ol')">
+                        Ordered
+                      </button>
+                      <button class="demo-btn" onclick="setList('dl')">
+                        Definition
+                      </button>
+                      <button class="demo-btn" onclick="addLi()">+ Add</button>
+                      <button class="demo-btn" onclick="removeLi()">
+                        - Remove
+                      </button>
+                    </div>
+                  </div>
+                  <div class="visual-stage" id="listVisual"></div>
+                  <pre id="listCode"></pre>
+                </div>
+
+                <h2>3. Hyperlinks</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <label>URL:</label
+                      ><input
+                        type="text"
+                        id="linkUrl"
+                        value="https://google.com"
+                        oninput="updLink()"
+                      />
+                      <label>Target:</label>
+                      <select id="linkTarget" onchange="updLink()">
+                        <option value="_self">_self</option>
+                        <option value="_blank">_blank</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    class="visual-stage"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                    "
+                  >
+                    <a
+                      id="linkVisual"
+                      href="#"
+                      style="color: blue; text-decoration: underline"
+                      >Visit Link</a
+                    >
+                  </div>
+                  <pre id="linkCode"></pre>
+                </div>
+
+                <h2>4. Multimedia Elements</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <button class="demo-btn" onclick="setMedia('img')">
+                        Image
+                      </button>
+                      <button class="demo-btn" onclick="setMedia('video')">
+                        Video
+                      </button>
+                      <button class="demo-btn" onclick="setMedia('audio')">
+                        Audio
+                      </button>
+                    </div>
+                    <div class="row">
+                      <label>Width:</label
+                      ><input
+                        type="range"
+                        id="mediaW"
+                        min="100"
+                        max="600"
+                        value="300"
+                        oninput="updMedia()"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    class="visual-stage"
+                    id="mediaVisual"
+                    style="text-align: center"
+                  ></div>
+                  <pre id="mediaCode"></pre>
+                </div>
+
+                <h2>5. Iframes</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <label>Source:</label>
+                      <select id="frameSrc" onchange="updFrame()">
+                        <option
+                          value="https://www.youtube.com/embed/rXDNpW7MkQQ"
+                        >
+                          Peaches (YouTube)
+                        </option>
+                        <option value="https://www.wikipedia.org">
+                          Wikipedia
+                        </option>
+                        <option
+                          value="https://www.openstreetmap.org/export/embed.html"
+                        >
+                          Map
+                        </option>
+                      </select>
+                      <label>Width:</label
+                      ><input
+                        type="range"
+                        id="frameW"
+                        min="200"
+                        max="800"
+                        value="500"
+                        oninput="updFrame()"
+                      />
+                      <label>Height:</label
+                      ><input
+                        type="range"
+                        id="frameH"
+                        min="150"
+                        max="600"
+                        value="300"
+                        oninput="updFrame()"
+                      />
+                    </div>
+                  </div>
+                  <div class="visual-stage" id="frameStage">
+                    <iframe
+                      id="frameVisual"
+                      src=""
+                      style="border: none"
+                    ></iframe>
+                  </div>
+                  <pre id="frameCode"></pre>
+                </div>
+
+                <h2>6. Tables</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <button class="demo-btn" onclick="toggleTable('simple')">
+                      Simple
+                    </button>
+                    <button class="demo-btn" onclick="toggleTable('rowspan')">
+                      Rowspan
+                    </button>
+                    <button class="demo-btn" onclick="toggleTable('colspan')">
+                      Colspan
+                    </button>
+                  </div>
+                  <div class="visual-stage">
+                    <table
+                      id="advTable"
+                      border="1"
+                      style="
+                        width: 100%;
+                        border-collapse: collapse;
+                        text-align: left;
+                      "
+                    ></table>
+                  </div>
+                  <pre id="tableCode"></pre>
+                </div>
+
+                <h2>7. Inputs & Attributes</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <select id="basicInputType" onchange="updBasicInput()">
+                        <option value="text">Text</option>
+                        <option value="password">Password</option>
+                        <option value="date">Date</option>
+                        <option value="color">Color</option>
+                      </select>
+                      <label
+                        ><input
+                          type="checkbox"
+                          id="attrReq"
+                          onchange="updAttr()"
+                        />
+                        Required</label
+                      >
+                      <label
+                        ><input
+                          type="checkbox"
+                          id="attrDis"
+                          onchange="updAttr()"
+                        />
+                        Disabled</label
+                      >
+                    </div>
+                  </div>
+                  <div class="visual-stage">
+                    <form>
+                      <input
+                        id="basicVisual"
+                        style="padding: 8px; width: 200px; color: black"
+                      />
+                    </form>
+                  </div>
+                  <pre id="basicInputCode"></pre>
+                </div>
+
+                <h2>8. Advanced Inputs</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <button class="demo-btn" onclick="setAdvInput('date')">
+                        Date
+                      </button>
+                      <button class="demo-btn" onclick="setAdvInput('range')">
+                        Range
+                      </button>
+                      <button class="demo-btn" onclick="setAdvInput('file')">
+                        File
+                      </button>
+                    </div>
+                  </div>
+                  <div class="visual-stage" id="advInputStage"></div>
+                  <pre id="advInputCode"></pre>
+                </div>
+
+                <h2>9. Form Controls</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <div class="row">
+                      <button class="demo-btn" onclick="setControl('select')">
+                        Select
+                      </button>
+                      <button class="demo-btn" onclick="setControl('radio')">
+                        Radio
+                      </button>
+                      <button class="demo-btn" onclick="setControl('checkbox')">
+                        Checkbox
+                      </button>
+                    </div>
+                  </div>
+                  <div class="visual-stage" id="controlStage"></div>
+                  <pre id="controlCode"></pre>
+                </div>
+
+                <h2>10. Semantic Layout</h2>
+                <div class="demo-section">
+                  <div class="visual-stage">
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        text-align: center;
+                        font-size: 0.8rem;
+                      "
+                    >
+                      <header style="background: #ffcccb; padding: 10px">
+                        &lt;header&gt;
+                      </header>
+                      <main style="background: #ccccff; padding: 20px">
+                        &lt;main&gt;
+                      </main>
+                      <footer style="background: #ffffcc; padding: 10px">
+                        &lt;footer&gt;
+                      </footer>
+                    </div>
+                  </div>
+                  <pre id="semCode"></pre>
+                </div>
+
+                <h2>11. Details</h2>
+                <div class="demo-section">
+                  <div class="visual-stage">
+                    <details>
+                      <summary style="cursor: pointer; font-weight: bold">
+                        Click Me
+                      </summary>
+                      <p
+                        style="
+                          margin-top: 10px;
+                          background: #eee;
+                          padding: 10px;
+                        "
+                      >
+                        Hidden!
+                      </p>
+                    </details>
+                  </div>
+                  <pre id="detailsCode"></pre>
+                </div>
+
+                <h2>12. Global Attributes</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <button class="demo-btn" onclick="toggleGlobal('edit')">
+                      Editable
+                    </button>
+                    <button class="demo-btn" onclick="toggleGlobal('hidden')">
+                      Hidden
+                    </button>
+                  </div>
+                  <div class="visual-stage">
+                    <div
+                      id="globalDiv"
+                      style="padding: 20px; border: 1px solid #ccc"
+                    >
+                      Interact!
+                    </div>
+                  </div>
+                  <pre id="globalCode"></pre>
+                </div>
+
+                <h2>13. Entities</h2>
+                <div class="demo-section">
+                  <div
+                    class="visual-stage"
+                    style="text-align: center; font-size: 1.5rem"
+                  >
+                    &copy; &reg; &euro; &lt; &gt;
+                  </div>
+                  <pre>
+<span class="tag">&lt;p&gt;</span>Copyright: &amp;copy;<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p&gt;</span>Registered: &amp;reg;<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p&gt;</span>Euro: &amp;euro;<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p&gt;</span>Less Than: &amp;lt;<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p&gt;</span>Greater Than: &amp;gt;<span class="tag">&lt;/p&gt;</span></pre>
+                </div>
+
+                <h2>14. SVG</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <input
+                      type="color"
+                      id="svgColor"
+                      value="#e34f26"
+                      oninput="updSvg()"
+                    />
+                  </div>
+                  <div
+                    class="visual-stage"
+                    style="display: flex; justify-content: center"
+                  >
+                    <svg width="100" height="100">
+                      <circle
+                        id="svgCircle"
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="black"
+                        stroke-width="2"
+                        fill="#e34f26"
+                      />
+                    </svg>
+                  </div>
+                  <pre id="svgCode"></pre>
+                </div>
+
+                <h2>15. SEO Meta</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <label>Title:</label
+                    ><input
+                      type="text"
+                      id="metaTitle"
+                      value="My Site"
+                      oninput="updMeta()"
+                    />
+                  </div>
+                  <div class="visual-stage" style="background: white">
+                    <div style="font-family: arial; max-width: 600px">
+                      <div
+                        id="prevTitle"
+                        style="
+                          color: #1a0dab;
+                          font-size: 20px;
+                          text-decoration: underline;
+                        "
+                      >
+                        My Site
+                      </div>
+                      <div style="color: #4d5156; font-size: 14px">
+                        Description here...
+                      </div>
+                    </div>
+                  </div>
+                  <pre id="metaCode"></pre>
+                </div>
+
+                <h2>16. Progress</h2>
+                <div class="demo-section">
+                  <div class="control-panel">
+                    <input
+                      type="range"
+                      id="progVal"
+                      min="0"
+                      max="100"
+                      value="70"
+                      oninput="updProgress()"
+                    />
+                  </div>
+                  <div class="visual-stage">
+                    <progress id="progVisual" value="70" max="100"></progress>
+                  </div>
+                  <pre id="progCode"></pre>
+                </div>
+
+                <h2>📝 20 Rapid-Fire Questions</h2>
+                <div class="qa-grid">
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      1. HTML stands for?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      HyperText Markup Language
+                      <span class="qa-code">.html</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      2. Which tag is largest heading?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use the <span class="qa-code">&lt;h1&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      3. How to create line break?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use the <span class="qa-code">&lt;br&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      4. Which tag for unordered list?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use the <span class="qa-code">&lt;ul&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      5. Attribute for image source?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">src</span> attribute.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      6. How to create a link?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use anchor tag
+                      <span class="qa-code">&lt;a href=""&gt;</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      7. Tag for main content?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">&lt;main&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      8. How to create checkbox?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      <span class="qa-code">&lt;input type="checkbox"&gt;</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      9. Tag for table row?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">&lt;tr&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      10. What does alt do?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Text for screen readers
+                      <span class="qa-code">alt=""</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      11. Tag for dropdown list?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">&lt;select&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      12. Why is div block?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Takes full width
+                      <span class="qa-code">display:block</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      13. Why is span inline?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Sits in text <span class="qa-code">display:inline</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      14. How to embed video?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use the <span class="qa-code">&lt;video&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      15. Attribute to merge cols?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use <span class="qa-code">colspan="2"</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      16. Tag for navigation?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">&lt;nav&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      17. Where to put copyright?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Inside <span class="qa-code">&lt;footer&gt;</span> tag.
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      18. How to create slider?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      <span class="qa-code">&lt;input type="range"&gt;</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      19. How to embed website?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      Use <span class="qa-code">&lt;iframe src=""&gt;</span>
+                    </div>
+                  </div>
+                  <div class="qa-card">
+                    <div class="qa-question">
+                      20. Semantic emphasis tag?<span>▼</span>
+                    </div>
+                    <div class="qa-answer">
+                      The <span class="qa-code">&lt;em&gt;</span> tag.
+                    </div>
+                  </div>
+                </div>
+
+                <div style="height: 50px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="footer-section">
+        <div class="w3-cta">
+          <h2
+            style="
+              margin: 0 0 10px 0;
+              font-size: 1.4rem;
+              border: none;
+              padding: 0;
+              color: white;
+            "
+          >
+            Need More Practice?
+          </h2>
+          <p style="margin: 0; color: #ccc">
+            Explore thousands of HTML tutorials outside this IDE.
+          </p>
+          <a
+            href="https://www.w3schools.com/html/default.asp"
+            target="_blank"
+            class="w3-btn"
+            >Visit W3Schools</a
+          >
+        </div>
+
+        <footer class="mega-footer">
+          <div class="footer-grid">
+            <div class="f-brand">
+              <h2>FullStacked</h2>
+              <p>A self-learning platform built for the modern era.</p>
+            </div>
+            <div class="f-col">
+              <h4>Modules</h4>
+              <ul class="f-links">
+                <li><a href="html practice.html">HTML</a></li>
+                <li><a href="lecture_03_css_master_guide.html">CSS</a></li>
+                <li><a href="js practise.html">JS</a></li>
+                <li><a href="php practise.html">PHP</a></li>
+              </ul>
+            </div>
+            <div class="f-col">
+              <h4>Platform</h4>
+              <ul class="f-links">
+                <li><a href="about.html">About</a></li>
+                <li><a href="#">Community</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="f-bottom">
+            <div style="color: var(--text-dim); font-size: 13px">
+              &copy; 2026 Anuththara Wickramasekara. All rights reserved.
+            </div>
+            <div class="socials">
+              <a href="#" class="s-icon"><i class="fab fa-linkedin-in"></i></a>
+              <a href="#" class="s-icon"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <script>
+      /* --- LOADER --- */
+      gsap.to(".loader-text", {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+      gsap.to(".loader-container", {
+        y: "-100%",
+        duration: 1,
+        ease: "power4.inOut",
+        delay: 1,
+      });
+
+      /* --- HELPER --- */
+      function wrapCode(inner) {
+        return `<span class="struct">&lt;body&gt;</span>\n  <span class="struct">&lt;div class="container"&gt;</span>\n${inner}\n  <span class="struct">&lt;/div&gt;</span>\n<span class="struct">&lt;/body&gt;</span>`;
+      }
+
+      /* --- DEMO FUNCTIONS --- */
+      function updText() {
+        const tag = document.getElementById("textTag").value;
+        const txt = document.getElementById("textContent").value;
+        document.getElementById("textVisual").innerHTML =
+          `<${tag}>${txt}</${tag}>`;
+        document.getElementById("textCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;${tag}&gt;</span>${txt}<span class="tag">&lt;/${tag}&gt;</span>`,
+        );
+      }
+      updText();
+
+      let listType = "ul";
+      let listCount = 2;
+      function setList(t) {
+        listType = t;
+        updList();
+      }
+      function addLi() {
+        listCount++;
+        updList();
+      }
+      function removeLi() {
+        if (listCount > 0) listCount--;
+        updList();
+      }
+      function updList() {
+        let html = `<${listType}>`,
+          code = `    <span class="tag">&lt;${listType}&gt;</span>\n`;
+        for (let i = 1; i <= listCount; i++) {
+          html += `<li>Item ${i}</li>`;
+          code += `      <span class="tag">&lt;li&gt;</span>Item ${i}<span class="tag">&lt;/li&gt;</span>\n`;
+        }
+        html += `</${listType}>`;
+        code += `    <span class="tag">&lt;/${listType}&gt;</span>`;
+        document.getElementById("listVisual").innerHTML = html;
+        document.getElementById("listCode").innerHTML = wrapCode(code);
+      }
+      updList();
+
+      function updLink() {
+        const u = document.getElementById("linkUrl").value;
+        const t = document.getElementById("linkTarget").value;
+        const a = document.getElementById("linkVisual");
+        a.href = u;
+        a.target = t;
+        a.innerText = "Visit Link";
+        document.getElementById("linkCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"${u}"</span> <span class="attr">target</span>=<span class="val">"${t}"</span><span class="tag">&gt;</span>Visit Link<span class="tag">&lt;/a&gt;</span>`,
+        );
+      }
+      updLink();
+
+      let curMedia = "img";
+      function setMedia(t) {
+        curMedia = t;
+        updMedia();
+      }
+      function updMedia() {
+        const w = document.getElementById("mediaW").value;
+        const stage = document.getElementById("mediaVisual");
+        const code = document.getElementById("mediaCode");
+        if (curMedia === "img") {
+          const src =
+            "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400";
+          stage.innerHTML = `<img src="${src}" width="${w}" style="border-radius:8px;">`;
+          code.innerHTML = wrapCode(
+            `    <span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="val">"${src}"</span> <span class="attr">width</span>=<span class="val">"${w}"</span> <span class="tag">/&gt;</span>`,
+          );
+        } else if (curMedia === "video") {
+          const src = "https://www.w3schools.com/html/mov_bbb.mp4";
+          stage.innerHTML = `<video width="${w}" controls style="border-radius:8px;"><source src="${src}"></video>`;
+          code.innerHTML = wrapCode(
+            `    <span class="tag">&lt;video</span> <span class="attr">width</span>=<span class="val">"${w}"</span> <span class="attr">controls</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;source</span> <span class="attr">src</span>=<span class="val">"${src}"</span> <span class="attr">type</span>=<span class="val">"video/mp4"</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/video&gt;</span>`,
+          );
+        } else if (curMedia === "audio") {
+          const src = "https://www.youtube.com/embed/rXDNpW7MkQQ";
+          stage.innerHTML = `<iframe width="${w}" height="80" src="${src}" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+          code.innerHTML = wrapCode(
+            `    <span class="comment">&lt;!-- YouTube Audio Embed --&gt;</span>
+    <span class="tag">&lt;iframe</span> <span class="attr">src</span>=<span class="val">"${src}"</span> <span class="attr">width</span>=<span class="val">"${w}"</span> <span class="attr">height</span>=<span class="val">"80"</span><span class="tag">&gt;&lt;/iframe&gt;</span>`,
+          );
+        }
+      }
+      updMedia();
+
+      function updFrame() {
+        const src = document.getElementById("frameSrc").value;
+        const w = document.getElementById("frameW").value;
+        const h = document.getElementById("frameH").value;
+        const f = document.getElementById("frameVisual");
+        f.src = src;
+        f.style.width = w + "px";
+        f.style.height = h + "px";
+        document.getElementById("frameCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;iframe</span> <span class="attr">src</span>=<span class="val">"${src}"</span> <span class="attr">width</span>=<span class="val">"${w}"</span> <span class="attr">height</span>=<span class="val">"${h}"</span><span class="tag">&gt;&lt;/iframe&gt;</span>`,
+        );
+      }
+      updFrame();
+
+      function toggleTable(mode) {
+        const tbl = document.getElementById("advTable");
+        let html = "";
+        let code = "";
+        if (mode === "simple") {
+          html = `<tr><th>Name</th><th>Role</th></tr><tr><td>Alice</td><td>Dev</td></tr>`;
+          code = `    <span class="tag">&lt;table</span> <span class="attr">border</span>=<span class="val">"1"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;th&gt;</span>Name<span class="tag">&lt;/th&gt;</span>
+        <span class="tag">&lt;th&gt;</span>Role<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Alice<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Dev<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+    <span class="tag">&lt;/table&gt;</span>`;
+        } else if (mode === "rowspan") {
+          html = `<tr><th>G</th><th>N</th></tr><tr><td rowspan="2">IT</td><td>Alice</td></tr><tr><td>Bob</td></tr>`;
+          code = `    <span class="tag">&lt;table</span> <span class="attr">border</span>=<span class="val">"1"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;th&gt;</span>G<span class="tag">&lt;/th&gt;</span>
+        <span class="tag">&lt;th&gt;</span>N<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td</span> <span class="attr">rowspan</span>=<span class="val">"2"</span><span class="tag">&gt;</span>IT<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Alice<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Bob<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+    <span class="tag">&lt;/table&gt;</span>`;
+        } else {
+          html = `<tr><th colspan="2">User</th></tr><tr><td>Alice</td><td>Dev</td></tr>`;
+          code = `    <span class="tag">&lt;table</span> <span class="attr">border</span>=<span class="val">"1"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;th</span> <span class="attr">colspan</span>=<span class="val">"2"</span><span class="tag">&gt;</span>User<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Alice<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Dev<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+    <span class="tag">&lt;/table&gt;</span>`;
+        }
+        tbl.innerHTML = html;
+        document.getElementById("tableCode").innerHTML = wrapCode(code);
+      }
+      toggleTable("simple");
+
+      function updBasicInput() {
+        const t = document.getElementById("basicInputType").value;
+        const v = document.getElementById("basicVisual");
+        v.type = t;
+        // Reset type text if not special
+        if (t !== "date" && t !== "color") v.placeholder = "Type here...";
+
+        document.getElementById("basicInputCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;form&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"${t}"</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>`,
+        );
+      }
+      updBasicInput();
+
+      function setAdvInput(t) {
+        document.getElementById("advInputStage").innerHTML =
+          `<input type="${t}">`;
+        document.getElementById("advInputCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"${t}"</span> <span class="tag">/&gt;</span>`,
+        );
+      }
+      setAdvInput("date");
+
+      function setControl(t) {
+        const s = document.getElementById("controlStage");
+        let code = "";
+        if (t === "select") {
+          s.innerHTML = `<select><option>Option 1</option><option>Option 2</option></select>`;
+          code = `    <span class="tag">&lt;select&gt;</span>
+      <span class="tag">&lt;option&gt;</span>Option 1<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option&gt;</span>Option 2<span class="tag">&lt;/option&gt;</span>
+    <span class="tag">&lt;/select&gt;</span>`;
+        } else if (t === "radio") {
+          s.innerHTML = `<input type="radio" name="grp"> A <input type="radio" name="grp"> B`;
+          code = `    <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"radio"</span> <span class="attr">name</span>=<span class="val">"grp"</span><span class="tag">&gt;</span> A
+    <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"radio"</span> <span class="attr">name</span>=<span class="val">"grp"</span><span class="tag">&gt;</span> B`;
+        } else {
+          s.innerHTML = `<input type="checkbox"> Check Me`;
+          code = `    <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"checkbox"</span><span class="tag">&gt;</span> Check Me`;
+        }
+        document.getElementById("controlCode").innerHTML = wrapCode(code);
+      }
+      setControl("select");
+
+      function updAttr() {
+        const req = document.getElementById("attrReq").checked;
+        const dis = document.getElementById("attrDis").checked;
+        const inp = document.getElementById("basicVisual");
+        const t = document.getElementById("basicInputType").value;
+        inp.required = req;
+        inp.disabled = dis;
+        document.getElementById("basicInputCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;form&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"${t}"</span>${req ? " <span class='attr'>required</span>" : ""}${dis ? " <span class='attr'>disabled</span>" : ""} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>`,
+        );
+      }
+
+      document.getElementById("semCode").innerHTML = wrapCode(
+        `    <span class="tag">&lt;header&gt;</span>
+      <span class="tag">&lt;h1&gt;</span>Page Title<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;/header&gt;</span>
+    <span class="tag">&lt;main&gt;</span>
+      <span class="tag">&lt;p&gt;</span>Main content area...<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/main&gt;</span>
+    <span class="tag">&lt;footer&gt;</span>
+      <span class="tag">&lt;p&gt;</span>&amp;copy; 2024<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/footer&gt;</span>`,
+      );
+
+      document.getElementById("detailsCode").innerHTML = wrapCode(
+        `    <span class="tag">&lt;details&gt;</span>
+      <span class="tag">&lt;summary&gt;</span>Click Me<span class="tag">&lt;/summary&gt;</span>
+      <span class="tag">&lt;p&gt;</span>Hidden content revealed!<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/details&gt;</span>`,
+      );
+
+      function toggleGlobal(a) {
+        const d = document.getElementById("globalDiv");
+        let code = "";
+        if (a === "edit")
+          d.contentEditable = d.isContentEditable ? "false" : "true";
+        if (a === "hidden") d.hidden = !d.hidden;
+
+        // Reconstruct code view based on current state
+        let attrs = "";
+        if (d.isContentEditable)
+          attrs += ' <span class="attr">contenteditable</span>';
+        if (d.hidden) attrs += ' <span class="attr">hidden</span>';
+
+        document.getElementById("globalCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;div</span>${attrs}<span class="tag">&gt;</span>
+      Interact!
+    <span class="tag">&lt;/div&gt;</span>`,
+        );
+      }
+      // Initialize global code view
+      toggleGlobal("");
+
+      function updSvg() {
+        const c = document.getElementById("svgColor").value;
+        document.getElementById("svgCircle").setAttribute("fill", c);
+        document.getElementById("svgCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;svg</span> <span class="attr">width</span>=<span class="val">"100"</span> <span class="attr">height</span>=<span class="val">"100"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;circle</span> <span class="attr">cx</span>=<span class="val">"50"</span> <span class="attr">cy</span>=<span class="val">"50"</span> <span class="attr">r</span>=<span class="val">"40"</span> <span class="attr">fill</span>=<span class="val">"${c}"</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/svg&gt;</span>`,
+        );
+      }
+      updSvg();
+
+      function updMeta() {
+        const t = document.getElementById("metaTitle").value;
+        document.getElementById("prevTitle").innerText = t;
+        document.getElementById("metaCode").innerHTML =
+          `  <span class="tag">&lt;head&gt;</span>
+    <span class="tag">&lt;title&gt;</span>${t}<span class="tag">&lt;/title&gt;</span>
+    <span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"description"</span> <span class="attr">content</span>=<span class="val">"..."</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;/head&gt;</span>`;
+      }
+      updMeta();
+
+      function updProgress() {
+        const v = document.getElementById("progVal").value;
+        document.getElementById("progVisual").value = v;
+        document.getElementById("progCode").innerHTML = wrapCode(
+          `    <span class="tag">&lt;progress</span> <span class="attr">value</span>=<span class="val">"${v}"</span> <span class="attr">max</span>=<span class="val">"100"</span><span class="tag">&gt;&lt;/progress&gt;</span>`,
+        );
+      }
+      updProgress();
+
+      /* --- CLICK HANDLERS --- */
+      $(".qa-card").click(function () {
+        $(this).find(".qa-answer").slideToggle();
+      });
+
+      document.getElementById("themeToggle").onclick = () =>
+        document.body.classList.toggle("light-mode");
+      document.getElementById("fsToggle").onclick = () =>
+        document.fullscreenElement
+          ? document.exitFullscreen()
+          : document.documentElement.requestFullscreen();
+
+      /* --- LENIS --- */
+      const lenis = new Lenis({ duration: 1.2, smooth: true });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- NAV HIDING --- */
+      const navContainer = document.querySelector(".glass-nav-container");
+
+      /* NAV logic on MAIN SCROLL (for Footer) */
+      let lastBodyScroll = 0;
+      window.addEventListener("scroll", () => {
+        const currentScroll = window.scrollY;
+        if (currentScroll > lastBodyScroll && currentScroll > 50)
+          navContainer.classList.add("nav-hidden");
+        else navContainer.classList.remove("nav-hidden");
+        lastBodyScroll = currentScroll;
+      });
+
+      /* Nav Pill */
+      const links = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      links.forEach((l) =>
+        l.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const a = document.querySelector(".nav-link.active");
+          if (a) movePill(a);
+        });
+      setTimeout(() => {
+        const a = document.querySelector(".nav-link.active");
+        if (a) movePill(a);
+      }, 500);
+    </script>
+  </body>
+</html>

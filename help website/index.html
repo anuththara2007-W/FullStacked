@@ -1,0 +1,1916 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FullStacked | Interactive Self-Learning</title>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- 1. CORE VARIABLES --- */
+      :root {
+        --bg-dark: #020202;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-blur: 40px;
+        --text-main: #ffffff;
+        --text-dim: #94a3b8;
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.4);
+        --success: #22c55e;
+        --nav-bg: rgba(15, 15, 15, 0.8);
+      }
+
+      body.light-mode {
+        --bg-dark: #f0f2f5;
+        --glass-bg: rgba(255, 255, 255, 0.6);
+        --glass-border: rgba(0, 0, 0, 0.05);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #2563eb;
+        --nav-bg: rgba(255, 255, 255, 0.85);
+      }
+
+      /* --- 2. RESET & BASE --- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+      .lenis.lenis-smooth [data-lenis-prevent] {
+        overscroll-behavior: contain;
+      }
+      .lenis.lenis-stopped {
+        overflow: hidden;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        background-image: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        overflow-x: hidden;
+        transition:
+          background 0.5s,
+          color 0.5s;
+      }
+
+      #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(2, 2, 2, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: -2;
+        transition: background 0.5s;
+      }
+      body.light-mode::after {
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+        transition: 0.3s;
+      }
+      ul {
+        list-style: none;
+      }
+
+      /* --- 3. CINEMATIC LOADER --- */
+      .loader-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .loader-icon {
+        font-size: 4rem;
+        color: var(--accent);
+        margin-bottom: 15px;
+        opacity: 0;
+        transform: scale(0.5); /* Initial state */
+      }
+      .loader-text-wrapper {
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+      .loader-brand {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 400;
+        font-size: clamp(2rem, 6vw, 3.7rem);
+        color: white;
+        display: flex;
+        gap: 2px;
+      }
+      .char {
+        transform: translateY(100%);
+        display: inline-block;
+      }
+
+      .loader-progress-area {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+      }
+      .loader-bar-bg {
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+      .loader-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        box-shadow: 0 0 15px var(--accent);
+      }
+      .loader-percent {
+        font-family: "JetBrains Mono", monospace;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+      }
+
+      /* --- 4. TOP LEFT LOGO (FIXED) --- */
+      .fixed-logo {
+        position: fixed;
+        top: 30px;
+        left: 40px;
+        z-index: 1002;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 16px;
+        border-radius: 50px;
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--glass-border);
+        transition: 0.3s;
+      }
+      .fixed-logo i {
+        color: var(--accent);
+      }
+      .fixed-logo:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+      }
+
+      /* --- 5. SMART NAV BAR --- */
+      .glass-nav-container {
+        position: fixed;
+        top: 30px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      }
+      .glass-nav-container.nav-hidden {
+        transform: translateY(-200%);
+      }
+
+      .glass-nav {
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        padding: 8px 10px;
+        border-radius: 100px;
+        display: flex;
+        gap: 5px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .nav-link {
+        position: relative;
+        color: var(--text-dim);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 50px;
+        white-space: nowrap;
+      }
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        height: calc(100% - 16px);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        z-index: -1;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      /* HAMBURGER TOGGLE (Hidden on desktop) */
+      .nav-toggle {
+        display: none;
+        width: 44px;
+        height: 44px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .nav-toggle span {
+        width: 24px;
+        height: 2px;
+        background: var(--text-main);
+        border-radius: 2px;
+        transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      }
+
+      /* --- 6. RIGHT CONTROLS --- */
+      .right-controls {
+        position: fixed;
+        top: 30px;
+        right: 40px;
+        display: flex;
+        gap: 12px;
+        z-index: 1002;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+        font-size: 16px;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        transform: rotate(15deg);
+        color: white;
+      }
+
+      /* --- 7. HERO SECTION & STATS --- */
+      .velocity-content {
+        width: 100%;
+        transform-origin: center;
+        will-change: transform;
+      }
+
+      .hero {
+        min-height: 100vh;
+        top: 50px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 0 20px;
+        perspective: 1000px;
+      }
+      .hero-badge {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #60a5fa;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 30px;
+      }
+      .hero-title {
+        font-size: clamp(3.5rem, 8vw, 6.5rem);
+        font-weight: 800;
+        line-height: 1.05;
+        margin-bottom: 30px;
+        letter-spacing: -3px;
+        background: linear-gradient(
+          180deg,
+          var(--text-main) 0%,
+          var(--text-dim) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-sub {
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: var(--text-dim);
+        max-width: 650px;
+        margin-bottom: 40px;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      /* Hero Counters */
+      .hero-stats {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 50px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px 40px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .h-stat {
+        text-align: center;
+        min-width: 120px;
+      }
+      .h-num {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        display: block;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .h-label {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .live-dot {
+        height: 8px;
+        width: 8px;
+        background-color: var(--success);
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 10px var(--success);
+        animation: pulse-green 2s infinite;
+      }
+      @keyframes pulse-green {
+        0% {
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
+      }
+
+      .cta-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .btn-primary {
+        background: var(--text-main);
+        color: var(--bg-dark);
+        padding: 18px 45px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: 0.3s;
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--text-main);
+      }
+      .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 60px rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: var(--text-main);
+        padding: 18px 45px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 15px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        transition: 0.3s;
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--text-main);
+      }
+
+      /* --- 8. MARQUEE --- */
+      .marquee-section {
+        padding: 40px 0;
+        background: rgba(255, 255, 255, 0.02);
+        border-top: 1px solid var(--glass-border);
+        border-bottom: 1px solid var(--glass-border);
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .marquee-track {
+        display: inline-block;
+        animation: marquee 30s linear infinite;
+      }
+      .marquee-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 50px;
+        color: var(--text-dim);
+        font-weight: 600;
+        font-size: 1.3rem;
+        opacity: 0.5;
+        transition: 0.3s;
+      }
+      .marquee-item:hover {
+        color: var(--text-main);
+        opacity: 1;
+        text-shadow: 0 0 20px var(--accent);
+      }
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* --- 9. FEATURE GRID --- */
+      .container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 160px 20px;
+      }
+      .section-header {
+        margin-bottom: 100px;
+        text-align: center;
+      }
+      .section-label {
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        display: block;
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        color: var(--text-main);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+      }
+      .feature-card {
+        padding: 50px;
+        border-radius: 24px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        transition: 0.4s;
+      }
+      .feature-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateY(-10px);
+        border-color: var(--accent);
+      }
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
+      .feature-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 15px;
+      }
+      .feature-desc {
+        color: var(--text-dim);
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+
+      /* --- 10. MODULES --- */
+      .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 40px;
+      }
+      .module-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        height: 450px;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+      }
+      .module-card:hover {
+        transform: translateY(-15px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6);
+      }
+      .card-image {
+        width: 100%;
+        height: 50%;
+        object-fit: cover;
+        transition: 0.7s;
+        opacity: 0.7;
+        filter: grayscale(30%);
+      }
+      .module-card:hover .card-image {
+        transform: scale(1.1);
+        opacity: 1;
+        filter: grayscale(0%);
+      }
+      .card-info {
+        padding: 35px;
+        height: 50%;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(
+          to top,
+          var(--bg-dark) 0%,
+          rgba(0, 0, 0, 0.9) 100%
+        );
+        border-top: 1px solid var(--glass-border);
+        position: relative;
+        z-index: 2;
+      }
+      .card-icon {
+        position: absolute;
+        top: -35px;
+        right: 35px;
+        width: 70px;
+        height: 70px;
+        background: rgba(10, 10, 10, 0.9);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+      }
+      .card-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 10px;
+      }
+      .card-desc {
+        font-size: 1rem;
+        color: #aaa;
+        line-height: 1.6;
+        margin-bottom: auto;
+      }
+      .card-link {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: white;
+        letter-spacing: 1px;
+        margin-top: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0.6;
+        transition: 0.3s;
+      }
+      .module-card:hover .card-link {
+        opacity: 1;
+        gap: 15px;
+        color: var(--accent);
+      }
+
+      /* --- 11. VIDEO CARDS --- */
+      .video-grid {
+        display: grid;
+        top: 50px;
+        position: relative;
+        grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+      }
+      .video-card {
+        background: var(--glass-bg);
+        border: 2px solid var(--glass-border);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+      .video-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+      }
+      .video-thumb {
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+      }
+      .video-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.5s;
+      }
+      .video-card:hover .video-thumb img {
+        transform: scale(1.1);
+        filter: brightness(0.6);
+      }
+      .play-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        opacity: 0;
+        transition: 0.3s;
+      }
+      .video-card:hover .play-btn {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        background: var(--accent);
+      }
+      .video-info {
+        padding: 20px;
+      }
+      .video-info h3 {
+        font-size: 1.1rem;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+      .video-info p {
+        font-size: 0.9rem;
+        color: var(--text-dim);
+      }
+
+      /* --- 12. FAQ & REVIEWS (NEW CONTENT) --- */
+      .faq-item {
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 20px;
+      }
+      .faq-question {
+        padding: 20px 0;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--text-main);
+        transition: 0.3s;
+      }
+      .faq-question:hover {
+        color: var(--accent);
+      }
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        color: var(--text-dim);
+        line-height: 1.7;
+        font-size: 1rem;
+      }
+      .faq-answer p {
+        padding-bottom: 20px;
+      }
+      .faq-icon {
+        transition: 0.3s;
+      }
+      .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+        color: var(--accent);
+      }
+      .faq-item.active .faq-answer {
+        max-height: 300px;
+      }
+
+      .review-grid {
+        display: grid;
+        top: 50px;
+        position: relative;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+      }
+      .review-card {
+        background: var(--glass-bg);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+      }
+      .reviewer {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .r-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #333;
+      }
+      .r-name h4 {
+        color: white;
+        font-size: 1rem;
+      }
+      .r-name span {
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+      .r-text {
+        color: var(--text-dim);
+        line-height: 1.6;
+        font-style: italic;
+      }
+
+      /* --- 13. FOOTER --- */
+      .mega-footer {
+        background: #010101;
+        border-top: 1px solid var(--glass-border);
+        padding-top: 120px;
+        font-size: 1rem;
+        position: relative;
+        z-index: 10;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.5fr;
+        gap: 60px;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+      }
+      .f-brand h2 {
+        color: white;
+        font-size: 2rem;
+        margin-bottom: 25px;
+        letter-spacing: -1px;
+      }
+      .f-brand p {
+        color: var(--text-dim);
+        line-height: 1.8;
+        max-width: 400px;
+        font-size: 1.05rem;
+      }
+      .f-col h4 {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        font-weight: 600;
+      }
+      .f-links li {
+        margin-bottom: 18px;
+      }
+      .f-links a {
+        color: var(--text-dim);
+        transition: 0.2s;
+      }
+      .f-links a:hover {
+        color: white;
+        padding-left: 8px;
+      }
+      .f-bottom {
+        border-top: 1px solid var(--glass-border);
+        padding: 50px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+      .socials {
+        display: flex;
+        gap: 20px;
+      }
+      .s-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: 1px solid var(--glass-border);
+        transition: 0.3s;
+        font-size: 18px;
+      }
+      .s-icon:hover {
+        background: var(--accent);
+        transform: translateY(-5px);
+      }
+
+      /* Animation Utils */
+      .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .delay-1 {
+        transition-delay: 0.1s;
+      }
+      .delay-2 {
+        transition-delay: 0.2s;
+      }
+      .delay-3 {
+        transition-delay: 0.3s;
+      }
+
+      /* =========================================================
+         14. RESPONSIVE MEDIA QUERIES
+         ========================================================= */
+
+      @media (max-width: 1024px) {
+        .container {
+          padding: 100px 20px;
+        }
+        .footer-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+        }
+        .hero-title {
+          font-size: 4.5rem;
+        }
+      }
+
+      /* --- MOBILE STYLES (HAMBURGER MENU) --- */
+      @media (max-width: 768px) {
+        /* Logo & Controls positioning */
+        .fixed-logo {
+          left: 20px;
+          top: 20px;
+          font-size: 1.2rem;
+          padding: 6px 12px;
+        }
+        .right-controls {
+          right: 20px;
+          top: 20px;
+          gap: 8px;
+        }
+        .control-btn {
+          width: 38px;
+          height: 38px;
+          font-size: 14px;
+        }
+
+        /* HAMBURGER NAV LOGIC 
+           Instead of scrolling, we stack vertically when clicked.
+        */
+        .glass-nav-container {
+          top: 80px; /* Push down below logo */
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          pointer-events: none; /* Let clicks pass through around nav */
+        }
+
+        .glass-nav {
+          pointer-events: auto;
+          flex-direction: column;
+          width: 60px; /* Collapsed width */
+          height: 60px; /* Collapsed height */
+          border-radius: 30px;
+          padding: 0;
+          overflow: hidden;
+          justify-content: flex-start;
+          align-items: center;
+          transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          position: relative;
+        }
+
+        /* Nav Toggle (Hamburger) */
+        .nav-toggle {
+          display: flex;
+          width: 100%;
+          height: 60px;
+          flex-shrink: 0;
+          z-index: 20;
+        }
+
+        /* When Expanded */
+        .glass-nav.mobile-open {
+          width: 220px;
+          height: auto;
+          border-radius: 20px;
+          padding-bottom: 20px;
+          background: rgba(10, 10, 10, 0.95);
+        }
+
+        /* Links in Mobile */
+        .nav-link {
+          display: none; /* Hidden by default */
+          width: 100%;
+          text-align: center;
+          padding: 15px 0;
+          font-size: 16px;
+          opacity: 0;
+          transform: translateY(-10px);
+          transition:
+            opacity 0.3s,
+            transform 0.3s;
+        }
+
+        .glass-nav.mobile-open .nav-link {
+          display: block;
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Hide Pill Background on Mobile (Optional) */
+        .nav-pill {
+          display: none;
+        }
+
+        /* Hamburger Animation */
+        .glass-nav.mobile-open .nav-toggle span:nth-child(1) {
+          transform: translateY(8px) rotate(45deg);
+        }
+        .glass-nav.mobile-open .nav-toggle span:nth-child(2) {
+          transform: translateY(-0px) rotate(-45deg);
+        }
+
+        /* Hero Adjustments */
+        .hero {
+          padding-top: 140px;
+        }
+        .hero-title {
+          font-size: 3rem;
+        }
+        .hero-stats {
+          gap: 20px;
+          padding: 20px;
+        }
+
+        /* Stack Grids */
+        .features-grid,
+        .modules-grid,
+        .video-grid,
+        .review-grid {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+
+        .module-card {
+          height: 400px;
+        }
+        .feature-card {
+          padding: 30px;
+        }
+
+        .footer-grid {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+        .f-bottom {
+          flex-direction: column;
+          gap: 20px;
+          text-align: center;
+        }
+
+        .section-title {
+          font-size: 2.5rem;
+        }
+        .container {
+          padding: 80px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader-container">
+      <div class="loader-icon">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <div class="loader-text-wrapper">
+        <h1 class="loader-brand">
+          <span class="char">F</span><span class="char">u</span
+          ><span class="char">l</span><span class="char">l</span>
+          <span class="char">S</span><span class="char">t</span
+          ><span class="char">a</span><span class="char">c</span
+          ><span class="char">k</span><span class="char">e</span
+          ><span class="char">d</span>
+        </h1>
+      </div>
+      <div class="loader-progress-area">
+        <div class="loader-bar-bg"><div class="loader-bar"></div></div>
+        <div class="loader-percent">0%</div>
+      </div>
+    </div>
+
+    <a href="#home" class="fixed-logo">
+      <i class="fas fa-layer-group"></i> FullStacked
+    </a>
+
+    <div class="right-controls">
+      <button class="control-btn" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="control-btn" id="fsToggle" title="Fullscreen">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <button class="nav-toggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="nav-pill"></div>
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#features" class="nav-link">Methodology</a>
+        <a href="#modules" class="nav-link">Curriculum</a>
+        <a href="#videos" class="nav-link">Videos</a>
+        <a href="about.html" class="nav-link">about</a>
+        <a href="#community" class="nav-link">Community</a>
+      </nav>
+    </div>
+
+    <div class="velocity-content">
+      <section id="home" class="hero">
+        <div class="hero-badge reveal">Self-Learning Platform 2026</div>
+        <h1 class="hero-title reveal delay-1">
+          Guided Learning.<br />Production Skills.
+        </h1>
+        <p class="hero-sub reveal delay-2">
+          An immersive self-learning ecosystem. Master HTML, CSS, JS, and
+          Backend logic through <strong>guided interactive tutorials</strong>.
+        </p>
+
+        <div class="hero-stats reveal delay-2">
+          <div class="h-stat">
+            <span class="h-num" id="visitCount">2400</span>
+            <span class="h-label"
+              ><i class="fas fa-globe"></i> Total Visits</span
+            >
+          </div>
+          <div class="h-stat">
+            <span class="h-num" id="liveCount">112</span>
+            <span class="h-label"
+              ><span class="live-dot"></span> Online Now</span
+            >
+          </div>
+        </div>
+
+        <div class="cta-group reveal delay-3">
+          <a href="#modules" class="btn-primary">Start Practice</a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="btn-outline"
+          >
+            <i class="fab fa-github"></i> Source Code
+          </a>
+        </div>
+      </section>
+
+      <section class="marquee-section">
+        <div class="marquee-track">
+          <div class="marquee-item"><i class="fab fa-html5"></i> HTML5</div>
+          <div class="marquee-item"><i class="fab fa-css3-alt"></i> CSS3</div>
+          <div class="marquee-item"><i class="fab fa-js"></i> JavaScript</div>
+          <div class="marquee-item">
+            <i class="fab fa-bootstrap"></i> Bootstrap
+          </div>
+          <div class="marquee-item"><i class="fab fa-php"></i> PHP</div>
+          <div class="marquee-item"><i class="fas fa-database"></i> MySQL</div>
+          <div class="marquee-item"><i class="fab fa-react"></i> React</div>
+          <div class="marquee-item"><i class="fab fa-node"></i> Node.js</div>
+          <div class="marquee-item"><i class="fab fa-html5"></i> HTML5</div>
+          <div class="marquee-item"><i class="fab fa-css3-alt"></i> CSS3</div>
+          <div class="marquee-item"><i class="fab fa-js"></i> JavaScript</div>
+          <div class="marquee-item">
+            <i class="fab fa-bootstrap"></i> Bootstrap
+          </div>
+          <div class="marquee-item"><i class="fab fa-php"></i> PHP</div>
+        </div>
+      </section>
+
+      <section id="features" class="container">
+        <div class="section-header reveal">
+          <span class="section-label">Methodology</span>
+          <h2 class="section-title">Guided Self-Learning</h2>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card reveal delay-1">
+            <div class="feature-icon"><i class="fas fa-laptop-code"></i></div>
+            <h3 class="feature-title">Interactive Tutorials</h3>
+            <p class="feature-desc">
+              Modify code and see results instantly within the lesson context.
+            </p>
+          </div>
+          <div class="feature-card reveal delay-2">
+            <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+            <h3 class="feature-title">Structured Path</h3>
+            <p class="feature-desc">
+              Follow a curated roadmap from static markup to dynamic
+              applications.
+            </p>
+          </div>
+          <div class="feature-card reveal delay-3">
+            <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+            <h3 class="feature-title">Instant Feedback</h3>
+            <p class="feature-desc">
+              Immediate visual feedback on your code helps you debug faster.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="modules" class="container">
+        <div class="section-header reveal" style="text-align: center">
+          <span class="section-label">Library</span>
+          <h2 class="section-title">Core Curriculum</h2>
+        </div>
+
+        <div class="modules-grid">
+          <div
+            class="module-card reveal delay-1"
+            onclick="location.href = 'html practice.html'"
+          >
+            <img
+              src="https://w0.peakpx.com/wallpaper/214/158/HD-wallpaper-html5-logo-white-silk-texture-html5-emblem-programming-language-html-silk-background.jpg"
+              class="card-image"
+              alt="HTML"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fab fa-html5"></i></div>
+              <h3 class="card-title">HTML5 Master</h3>
+              <p class="card-desc">Semantic structure & SEO.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+          <div
+            class="module-card reveal delay-2"
+            onclick="location.href = 'css practice.html'"
+          >
+            <img
+              src="https://img.freepik.com/premium-vector/css-logo-design-web-development-programming-coding-web-design-technology-graphic-design-branding_1237311-7740.jpg"
+              class="card-image"
+              alt="CSS"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fab fa-css3-alt"></i></div>
+              <h3 class="card-title">CSS3 Styling</h3>
+              <p class="card-desc">Flexbox, Grid & Animations.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+          <div
+            class="module-card reveal delay-3"
+            onclick="location.href = 'js practise.html'"
+          >
+            <img
+              src="https://img.freepik.com/premium-vector/js-logo-design_1397038-155.jpg"
+              class="card-image"
+              alt="JS"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fab fa-js"></i></div>
+              <h3 class="card-title">JavaScript ES6+</h3>
+              <p class="card-desc">Modern logic & DOM manipulation.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+          <div
+            class="module-card reveal delay-1"
+            onclick="location.href = 'jquery practice.html'"
+          >
+            <img
+              src="https://miro.medium.com/v2/resize:fit:1200/1*m4GG2DmSThWVjXn4sy6g1g.jpeg"
+              class="card-image"
+              alt="jQuery"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+              <h3 class="card-title">jQuery Guide</h3>
+              <p class="card-desc">Simplified traversal & events.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+          <div
+            class="module-card reveal delay-2"
+            onclick="location.href = 'bootstrap.html'"
+          >
+            <img
+              src="https://getbootstrap.com/docs/5.3/assets/img/bootstrap-icons.png"
+              class="card-image"
+              alt="BS"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fab fa-bootstrap"></i></div>
+              <h3 class="card-title">Bootstrap 5</h3>
+              <p class="card-desc">Rapid prototyping framework.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+          <div
+            class="module-card reveal delay-3"
+            onclick="location.href = 'php practise.html'"
+          >
+            <img
+              src="https://static.vecteezy.com/system/resources/previews/029/576/139/non_2x/php-letter-logo-design-inspiration-for-a-unique-identity-modern-elegance-and-creative-design-watermark-your-success-with-the-striking-this-logo-vector.jpg"
+              class="card-image"
+              alt="PHP"
+            />
+            <div class="card-info">
+              <div class="card-icon"><i class="fab fa-php"></i></div>
+              <h3 class="card-title">PHP Backend</h3>
+              <p class="card-desc">Server-side logic & databases.</p>
+              <span class="card-link"
+                >Start Guide <i class="fas fa-arrow-right"></i
+              ></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="videos" class="container">
+        <h2 class="section-title reveal">Guided Videos</h2>
+
+        <div class="video-grid">
+          <div class="video-card reveal delay-1">
+            <a
+              href="https://youtube.com/playlist?list=PLXNgqM9ig24fvVI7DQZdJCR8Z8NqyvecA"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/33L-gLQ30M8/hqdefault.jpg"
+                  alt="HTML"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>HTML Playlist</h3>
+              <p>
+                | HTML Introduction | HTML Structure | Text Formatting | OL/UL |
+                Images | Tables | Input | Links | Entities | Iframes |
+              </p>
+            </div>
+          </div>
+          <div class="video-card reveal delay-1">
+            <a
+              href="https://www.youtube.com/watch?v=o8HY0Iwja34&pp=ygUWaHRtbCB0YWJsZXMgaW4gc2luaGFsYQ%3D%3D"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/o8HY0Iwja34/hqdefault.jpg?sqp=-oaymwEnCNACELwBSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLCs137ymy_-tF_5SOtjJllxn3IkGQ"
+                  alt="HD-wallpaper-html5-logo-white-silk-texture-html5-emblem-programming-language-html-silk-background"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>HTML Tables</h3>
+              <p>Tables | Column Span | Row Span</p>
+            </div>
+          </div>
+          <div class="video-card reveal delay-2">
+            <a
+              href="https://youtube.com/playlist?list=PLXNgqM9ig24fvVI7DQZdJCR8Z8NqyvecA"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/LSJ-PHgk4bQ/hqdefault.jpg"
+                  alt="CSS"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>CSS Playlist</h3>
+              <p>
+                Inline & External CSS | Class/ID | Float | Position | Border |
+                Font | Text Align
+              </p>
+            </div>
+          </div>
+
+          <div class="video-card reveal delay-2">
+            <a
+              href="https://youtube.com/playlist?list=PLXNgqM9ig24cM_oJq3xT4_paCMDKh4w2j"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/HBgC8WC5eMQ/hqdefault.jpg"
+                  alt="JS"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>JS Playlist</h3>
+              <p>
+                Internal & External JS | DOM | Events | Loops | Functions | Game
+                Development
+              </p>
+            </div>
+          </div>
+
+          <div class="video-card reveal delay-1">
+            <a
+              href="https://youtube.com/playlist?list=PLXNgqM9ig24fOEppqxjR91U1LXa19A7Je"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/TkWpIWJ5jis/hqdefault.jpg"
+                  alt="jQuery"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>jQuery Playlist</h3>
+              <p>
+                Click Detect | Change Content | Style | Fade | Animate | Regex
+              </p>
+            </div>
+          </div>
+
+          <div class="video-card reveal delay-2">
+            <a
+              href="https://youtube.com/playlist?list=PLYmyc7wRFoQh1VkiA9JOSnGlF6m5smbfl"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/ykbGGwqiEa4/hqdefault.jpg"
+                  alt="Bootstrap"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>Bootstrap Playlist</h3>
+              <p>
+                | Setup | Containers | Typography | Display | Position | Colors
+                | Spacing |
+              </p>
+            </div>
+          </div>
+
+          <div class="video-card reveal delay-2">
+            <a
+              href="https://youtube.com/playlist?list=PLcQPAs1DjFpc4NIeAd4QzxsZYs67UQq6c&si=RWja5d-6qDK58m9k"
+              target="_blank"
+            >
+              <div class="video-thumb">
+                <img
+                  src="https://i.ytimg.com/vi/EkTA7klCoz0/hqdefault.jpg"
+                  alt="PHP"
+                />
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+              </div>
+            </a>
+            <div class="video-info">
+              <h3>PHP Playlist</h3>
+              <p>
+                | PHP Basics | Variables | Loops | Functions | Super Globals |
+                MySQL | Security |
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" class="container">
+        <h2 class="section-title reveal">Community Stories</h2>
+        <div class="review-grid reveal">
+          <div class="review-card">
+            <div class="reviewer">
+              <div
+                class="r-avatar"
+                style="
+                  background: url(&quot;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0RbsfE-CTPvyX3hnl_iCv2iQ0KE2RvXcS8w&s&quot;)
+                    center/cover;
+                "
+              ></div>
+              <div class="r-name">
+                <h4>Kavinda</h4>
+                <span>Student</span>
+              </div>
+            </div>
+            <p class="r-text">
+              "superb interactive approach made interesting."
+            </p>
+          </div>
+          <div class="review-card">
+            <div class="reviewer">
+              <div
+                class="r-avatar"
+                style="
+                  background: url(&quot;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0RbsfE-CTPvyX3hnl_iCv2iQ0KE2RvXcS8w&s&quot;)
+                    center/cover;
+                "
+              ></div>
+              <div class="r-name">
+                <h4>Sarah</h4>
+                <span>dev</span>
+              </div>
+            </div>
+            <p class="r-text">"The guided path is easy to understand"</p>
+          </div>
+          <div class="review-card">
+            <div class="reviewer">
+              <div
+                class="r-avatar"
+                style="
+                  background: url(&quot;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0RbsfE-CTPvyX3hnl_iCv2iQ0KE2RvXcS8w&s&quot;)
+                    center/cover;
+                "
+              ></div>
+              <div class="r-name">
+                <h4>anupama</h4>
+                <span>Freelancer</span>
+              </div>
+            </div>
+            <p class="r-text">"Beautiful UI and solid content"</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="container">
+        <div class="section-header reveal">
+          <h2 class="section-title">Common Questions</h2>
+        </div>
+        <div class="faq-container reveal">
+          <div class="faq-item">
+            <div class="faq-question">
+              Is this platform free?
+              <i class="fas fa-chevron-down faq-icon"></i>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Yes! FullStacked is an open-source educational project available
+                to everyone for free.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              Do I need to install anything?
+              <i class="fas fa-chevron-down faq-icon"></i>
+            </div>
+            <div class="faq-answer">
+              <p>
+                No software installation is required. Our interactive
+                environments run directly in your browser.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">
+              Can I contribute tutorials?
+              <i class="fas fa-chevron-down faq-icon"></i>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Absolutely. Check out our GitHub repository to submit pull
+                requests or suggest new modules.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="mega-footer">
+      <div class="footer-grid">
+        <div class="f-brand">
+          <h2>FullStacked</h2>
+          <p>
+            A self-learning platform built for the modern era. Bridging the gap
+            between static theory and dynamic application.
+          </p>
+        </div>
+        <div class="f-col">
+          <h4>Modules</h4>
+          <ul class="f-links">
+            <li><a href="html practice.html">HTML5</a></li>
+            <li><a href="css practice.html">CSS3</a></li>
+            <li><a href="js practise.html">JavaScript</a></li>
+            <li><a href="jquery practice.html">jquery</a></li>
+
+            <li><a href="bootstrap.html">Bootstrap</a></li>
+
+            <li><a href="php practise.html">PHP</a></li>
+          </ul>
+        </div>
+        <div class="f-col">
+          <h4>Platform</h4>
+          <ul class="f-links">
+            <li><a href="about.html">About</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#modules">Resources</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="f-bottom">
+        <div style="color: var(--text-dim); font-size: 13px">
+          &copy; 2026 Anuththara Wickramasekara. Galle, Sri Lanka.
+        </div>
+        <div class="socials">
+          <a
+            href="https://www.linkedin.com/in/a-wickramasekara/"
+            target="_blank"
+            class="s-icon"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="s-icon"
+            ><i class="fab fa-github"></i
+          ></a>
+          <a href="mailto:anuththarawickramasekara424@gmail.com" class="s-icon"
+            ><i class="fas fa-envelope"></i
+          ></a>
+          <a
+            href="https://www.codechef.com/users/itz_me_anu"
+            target="_blank"
+            class="s-icon"
+            ><i class="fas fa-code"></i
+          ></a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* --- 1. LOADER ANIMATION --- */
+      gsap.registerPlugin(ScrollTrigger);
+      const tl = gsap.timeline();
+
+      gsap.set(".velocity-content", { autoAlpha: 0 });
+      gsap.set(".glass-nav-container", { autoAlpha: 0 });
+      gsap.set(".fixed-logo", { autoAlpha: 0, x: -50 });
+      gsap.set(".right-controls", { autoAlpha: 0, x: 50 });
+
+      // Stack Icon Animation
+      tl.to(".loader-icon", {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(1.7)",
+      })
+        // Text Reveal
+        .to(".char", { y: 0, stagger: 0.05, duration: 0.8, ease: "power4.out" })
+        .to(".loader-progress-area", { opacity: 1, duration: 0.5 })
+        .to(
+          ".loader-bar",
+          { width: "100%", duration: 3, ease: "power2.inOut" },
+          "<",
+        )
+        .to(
+          ".loader-percent",
+          {
+            textContent: "100%",
+            snap: { textContent: 1 },
+            duration: 3,
+            ease: "power2.inOut",
+          },
+          "<",
+        )
+        .to(".loader-container", {
+          y: "-100%",
+          duration: 1,
+          ease: "power4.inOut",
+          delay: 0.2,
+        })
+        // Site Reveal
+        .to(".velocity-content", { autoAlpha: 1, duration: 0.5 }, "-=0.5")
+        .to(
+          ".glass-nav-container",
+          { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" },
+          "-=0.3",
+        )
+        .to(".fixed-logo", { autoAlpha: 1, x: 0, duration: 0.5 }, "-=0.5")
+        .to(".right-controls", { autoAlpha: 1, x: 0, duration: 0.5 }, "-=0.5");
+
+      /* --- 2. STATS LOGIC (Fixed) --- */
+      // Animate Visits Count starting from 3400 to 3458+
+      // Using a proxy object to allow GSAP to animate a variable, avoiding NaN on DOM text
+      const visitProxy = { value: 3400 };
+
+      ScrollTrigger.create({
+        trigger: ".hero-stats",
+        start: "top 85%", // Triggers when top of stats section hits 85% of viewport height
+        onEnter: () => {
+          gsap.to(visitProxy, {
+            value: 3458,
+            duration: 2.5,
+            ease: "power2.out",
+            onUpdate: () => {
+              document.getElementById("visitCount").innerText = Math.floor(
+                visitProxy.value,
+              );
+            },
+          });
+        },
+      });
+
+      // Live Learners Fluctuation (Fixed NaN)
+      // Logic: Start at 142. Every 2 seconds, add random int between -2 and +3.
+      // Clamp between 30 and 600.
+      let currentLiveUsers = 142;
+      const liveCounterElement = document.getElementById("liveCount");
+
+      setInterval(() => {
+        // Random change between -2 and +3
+        const change = Math.floor(Math.random() * 6) - 2;
+        currentLiveUsers += change;
+
+        // Force bounds
+        if (currentLiveUsers < 30) currentLiveUsers = 30;
+        if (currentLiveUsers > 600) currentLiveUsers = 600;
+
+        liveCounterElement.innerText = currentLiveUsers;
+      }, 2000);
+
+      /* --- 3. SMART NAVBAR (Hide on Scroll Down) --- */
+      let lastScroll = 0;
+      const navContainer = document.querySelector(".glass-nav-container");
+      const glassNav = document.querySelector(".glass-nav"); // Get inner nav
+
+      window.addEventListener("scroll", () => {
+        const currentScroll = window.scrollY;
+
+        // Prevent hiding if mobile menu is OPEN
+        if (glassNav.classList.contains("mobile-open")) return;
+
+        // If scrolling down AND past 50px
+        if (currentScroll > lastScroll && currentScroll > 50) {
+          navContainer.classList.add("nav-hidden");
+        } else {
+          // If scrolling up OR at the very top
+          navContainer.classList.remove("nav-hidden");
+        }
+        lastScroll = currentScroll;
+      });
+
+      /* --- 4. CONTROLS LOGIC --- */
+      // Fullscreen
+      const fsToggle = document.getElementById("fsToggle");
+      fsToggle.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          fsToggle.innerHTML = '<i class="fas fa-compress"></i>';
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+            fsToggle.innerHTML = '<i class="fas fa-expand"></i>';
+          }
+        }
+      });
+
+      // Theme Toggle
+      const themeToggle = document.getElementById("themeToggle");
+      const body = document.body;
+      const themeIcon = themeToggle.querySelector("i");
+
+      themeToggle.addEventListener("click", () => {
+        body.classList.toggle("light-mode");
+        if (body.classList.contains("light-mode")) {
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+        } else {
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.add("fa-moon");
+        }
+      });
+
+      /* --- 5. LENIS & VELOCITY --- */
+      const lenis = new Lenis({ duration: 1.2, smooth: true });
+      const velocityContainer = document.querySelector(".velocity-content");
+      function raf(time) {
+        lenis.raf(time);
+        let skew = Math.max(Math.min(lenis.velocity * 0.05, 2), -2);
+        if (velocityContainer)
+          velocityContainer.style.transform = `skewY(${skew}deg)`;
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- 6. PARTICLES --- */
+      const canvas = document.getElementById("particles");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2;
+          this.speedY = Math.random() * 0.5 + 0.1;
+          this.opacity = Math.random() * 0.5;
+        }
+        update() {
+          this.y -= this.speedY; // Anti-gravity (Up)
+          if (this.y < 0) {
+            this.y = canvas.height;
+            this.x = Math.random() * canvas.width;
+          }
+        }
+        draw() {
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      for (let i = 0; i < 60; i++) particles.push(new Particle());
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      /* --- 7. REVEAL & NAV PILL --- */
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) entry.target.classList.add("active");
+          });
+        },
+        { threshold: 0.1 },
+      );
+      document
+        .querySelectorAll(".reveal")
+        .forEach((el) => observer.observe(el));
+
+      const navLinks = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      navLinks.forEach((l) =>
+        l.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const active = document.querySelector(".nav-link.active");
+          if (active) movePill(active);
+        });
+      setTimeout(() => {
+        const a = document.querySelector(".nav-link.active");
+        if (a) movePill(a);
+      }, 500);
+
+      /* --- 8. FAQ LOGIC --- */
+      const faqQuestions = document.querySelectorAll(".faq-question");
+      faqQuestions.forEach((q) => {
+        q.addEventListener("click", () => {
+          const item = q.parentElement;
+          item.classList.toggle("active");
+        });
+      });
+
+      /* --- 9. HAMBURGER LOGIC (NEW) --- */
+      const navToggle = document.querySelector(".nav-toggle");
+      const navMenu = document.querySelector(".glass-nav");
+
+      navToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("mobile-open");
+      });
+
+      // Close menu when a link is clicked
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", () => {
+          navMenu.classList.remove("mobile-open");
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About | FullStacked</title>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- 1. CORE VARIABLES (Synced with Home) --- */
+      :root {
+        --bg-dark: #020202;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-blur: 40px;
+        --text-main: #ffffff;
+        --text-dim: #94a3b8;
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.4);
+        --success: #22c55e;
+        --nav-bg: rgba(15, 15, 15, 0.8);
+      }
+
+      body.light-mode {
+        --bg-dark: #f0f2f5;
+        --glass-bg: rgba(255, 255, 255, 0.6);
+        --glass-border: rgba(0, 0, 0, 0.05);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #2563eb;
+        --nav-bg: rgba(255, 255, 255, 0.85);
+      }
+
+      /* --- 2. RESET & BASE --- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+      .lenis.lenis-stopped {
+        overflow: hidden;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        background-image: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        overflow-x: hidden;
+        transition:
+          background 0.5s,
+          color 0.5s;
+      }
+
+      #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(2, 2, 2, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: -2;
+        transition: background 0.5s;
+      }
+      body.light-mode::after {
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+        transition: 0.3s;
+      }
+      ul {
+        list-style: none;
+      }
+
+      /* --- 3. LOADER --- */
+      .loader-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .loader-text {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        color: white;
+        margin-bottom: 15px;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      /* --- 4. NAV BAR --- */
+      .fixed-logo {
+        position: fixed;
+        top: 30px;
+        left: 40px;
+        z-index: 1002;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 16px;
+        border-radius: 50px;
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--glass-border);
+        transition: 0.3s;
+      }
+      .fixed-logo i {
+        color: var(--accent);
+      }
+      .fixed-logo:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+      }
+
+      .glass-nav-container {
+        position: fixed;
+        top: 30px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        transition: transform 0.4s ease-in-out;
+      }
+      .glass-nav-container.nav-hidden {
+        transform: translateY(-200%);
+      }
+
+      .glass-nav {
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        padding: 8px 10px;
+        border-radius: 100px;
+        display: flex;
+        gap: 5px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link {
+        position: relative;
+        color: var(--text-dim);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 50px;
+      }
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        height: calc(100% - 16px);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        z-index: -1;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      /* --- 5. RIGHT CONTROLS --- */
+      .right-controls {
+        position: fixed;
+        top: 30px;
+        right: 40px;
+        display: flex;
+        gap: 12px;
+        z-index: 1002;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        transform: rotate(15deg);
+        color: white;
+      }
+
+      /* --- 6. PAGE CONTENT --- */
+      .velocity-content {
+        width: 100%;
+        transform-origin: center;
+        will-change: transform;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 140px 20px;
+      }
+
+      /* About Hero */
+      .about-hero {
+        text-align: center;
+        padding: 100px 20px 60px;
+      }
+      .about-title {
+        font-size: clamp(3rem, 6vw, 5rem);
+        font-weight: 800;
+        margin-bottom: 20px;
+        background: linear-gradient(180deg, var(--text-main), var(--text-dim));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -2px;
+      }
+      .about-sub {
+        font-size: 1.2rem;
+        color: var(--text-dim);
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.7;
+      }
+
+      /* Story Section */
+      .story-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: start;
+        margin-bottom: 120px;
+      }
+      .story-text h2 {
+        font-size: 2.2rem;
+        margin-bottom: 25px;
+        color: var(--text-main);
+      }
+      .story-text p {
+        color: var(--text-dim);
+        margin-bottom: 20px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .story-highlight {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .story-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .story-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(59, 130, 246, 0.1),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+
+      /* Philosophy Section (New) */
+      .philosophy-section {
+        margin-bottom: 120px;
+        padding: 60px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--glass-border);
+        text-align: center;
+      }
+      .philosophy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 40px;
+        margin-top: 50px;
+      }
+      .phil-item h3 {
+        color: white;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+      }
+      .phil-item p {
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+      .phil-icon {
+        font-size: 2.5rem;
+        color: var(--accent);
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+
+      /* Creator Section */
+      .creator-section {
+        text-align: center;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        padding: 80px 40px;
+        margin-bottom: 100px;
+        position: relative;
+        backdrop-filter: blur(20px);
+      }
+      .creator-avatar {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--glass-border);
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        transition: transform 0.5s ease;
+      }
+      .creator-avatar:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+      }
+      .creator-name {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text-main);
+      }
+      .creator-role {
+        color: var(--accent);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1rem;
+        margin-bottom: 30px;
+        display: block;
+      }
+
+      .social-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .social-link-card {
+        padding: 15px 30px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--text-dim);
+      }
+      .social-link-card:hover {
+        background: var(--accent);
+        color: white;
+        transform: translateY(-5px);
+        border-color: var(--accent);
+      }
+
+      /* --- 7. MEGA FOOTER (Synced with Homepage) --- */
+      .mega-footer {
+        background: #010101;
+        border-top: 1px solid var(--glass-border);
+        padding-top: 120px;
+        font-size: 1rem;
+        position: relative;
+        z-index: 10;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.5fr;
+        gap: 60px;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+      }
+      .f-brand h2 {
+        color: white;
+        font-size: 2rem;
+        margin-bottom: 25px;
+        letter-spacing: -1px;
+      }
+      .f-brand p {
+        color: var(--text-dim);
+        line-height: 1.8;
+        max-width: 400px;
+        font-size: 1.05rem;
+      }
+      .f-col h4 {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        font-weight: 600;
+      }
+      .f-links li {
+        margin-bottom: 18px;
+      }
+      .f-links a {
+        color: var(--text-dim);
+        transition: 0.2s;
+      }
+      .f-links a:hover {
+        color: white;
+        padding-left: 8px;
+      }
+
+      .newsletter input {
+        width: 100%;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 15px;
+        outline: none;
+        font-size: 1rem;
+      }
+      .newsletter button {
+        width: 100%;
+        padding: 16px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 1rem;
+      }
+      .newsletter button:hover {
+        background: white;
+        color: black;
+      }
+
+      .f-bottom {
+        border-top: 1px solid var(--glass-border);
+        padding: 50px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+      .socials {
+        display: flex;
+        gap: 20px;
+      }
+      .s-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: 1px solid var(--glass-border);
+        transition: 0.3s;
+        font-size: 18px;
+      }
+      .s-icon:hover {
+        background: var(--accent);
+        transform: translateY(-5px);
+      }
+
+      /* Animation Classes */
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      .delay-1 {
+        transition-delay: 0.1s;
+      }
+      .delay-2 {
+        transition-delay: 0.2s;
+      }
+      .delay-3 {
+        transition-delay: 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader-container">
+      <div class="loader-text">About FullStacked</div>
+    </div>
+
+    <a href="index.html" class="fixed-logo">
+      <i class="fas fa-layer-group"></i> FullStacked
+    </a>
+
+    <div class="right-controls">
+      <button class="control-btn" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="control-btn" id="fsToggle" title="Fullscreen">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link active">About</a>
+        <a href="index.html#modules" class="nav-link">Curriculum</a>
+        <a href="index.html#videos" class="nav-link">Videos</a>
+      </nav>
+    </div>
+
+    <div class="velocity-content">
+      <div class="container">
+        <div class="about-hero">
+          <h1 class="about-title reveal">Our Mission</h1>
+          <p class="about-sub reveal delay-1">
+            We are democratizing high-quality technical education. FullStacked
+            isn't just a website; it's a bridge between beginner curiosity and
+            professional capability.
+          </p>
+        </div>
+
+        <div class="story-section reveal delay-2">
+          <div class="story-text">
+            <h2>The "Tutorial Hell" Problem</h2>
+            <p>
+              We've all been there. You watch a 4-hour video, nod along, but
+              when you open a blank text editor, your mind goes blank. Why?
+              Because watching code is not the same as
+              <span class="story-highlight">writing code</span>.
+            </p>
+            <p>
+              FullStacked was born from this frustration. We believe that
+              <strong>active recall</strong>
+              is the only way to master syntax. Our platform forces you to
+              engage, modify, and break code in a safe environment until the
+              logic becomes second nature.
+            </p>
+            <p>
+              From Sri Lanka to the world, we are building the tool we wish we
+              had when we wrote our first <code>&lt;div&gt;</code>.
+            </p>
+          </div>
+          <div class="story-card">
+            <h3 style="margin-bottom: 20px; color: white">Technology Stack</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px">
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >HTML5 Structure</span
+              >
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >CSS3 Styling</span
+              >
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >JavaScript ES6+</span
+              >
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >Bootstrap 5</span
+              >
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >jQuery Library</span
+              >
+              <span
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  padding: 10px 20px;
+                  border-radius: 20px;
+                  color: var(--text-dim);
+                  font-size: 0.95rem;
+                "
+                >PHP & MySQL</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="philosophy-section reveal">
+          <h2 style="font-size: 2.2rem; color: var(--text-main)">
+            The FullStacked Philosophy
+          </h2>
+          <div class="philosophy-grid">
+            <div class="phil-item">
+              <i class="fas fa-hand-holding-heart phil-icon"></i>
+              <h3>Accessible</h3>
+              <p>
+                Education should not be gatekept by expensive bootcamps. We
+                remain free and open-source.
+              </p>
+            </div>
+            <div class="phil-item">
+              <i class="fas fa-hammer phil-icon"></i>
+              <h3>Practical</h3>
+              <p>
+                We skip the fluff. Every lesson is designed to teach you a skill
+                you will actually use on the job.
+              </p>
+            </div>
+            <div class="phil-item">
+              <i class="fas fa-sync-alt phil-icon"></i>
+              <h3>Modern</h3>
+              <p>
+                The web moves fast. We update our curriculum constantly to
+                reflect the latest standards (ES6+, Grid, etc).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="creator-section reveal">
+          <img
+            src="https://media.licdn.com/dms/image/v2/D4E03AQGBaww0NYm5jQ/profile-displayphoto-scale_400_400/B4EZo0aTxkKsAg-/0/1761815904231?e=1770249600&v=beta&t=1N5gft2NwkimvVfosCUJtUgtWwqAgsbGF0a35vlD9YM"
+            alt="Anuththara Wickramasekara"
+            class="creator-avatar"
+          />
+
+          <h2 class="creator-name">Anuththara Wickramasekara</h2>
+          <span class="creator-role">&lt;Lead Developer & Creator /&gt;</span>
+
+          <p
+            style="
+              color: var(--text-dim);
+              max-width: 700px;
+              margin: 0 auto 20px;
+              font-size: 1.1rem;
+              line-height: 1.8;
+            "
+          >
+            I am a passionate Full Stack Developer based in Galle, Sri Lanka.
+            With a deep love for clean code and intuitive design, I created
+            FullStacked to help others navigate the complex world of web
+            development.
+          </p>
+          <p
+            style="
+              color: var(--text-dim);
+              max-width: 700px;
+              margin: 0 auto 40px;
+              font-size: 1rem;
+            "
+          >
+            Whether you are just starting with HTML or diving into backend
+            logic, my goal is to provide you with the tools I used to build my
+            career. Let's code the future together.
+          </p>
+
+          <div class="social-grid">
+            <a
+              href="https://www.linkedin.com/in/a-wickramasekara/"
+              target="_blank"
+              class="social-link-card"
+            >
+              <i class="fab fa-linkedin"></i> LinkedIn
+            </a>
+            <a
+              href="https://github.com/anuththara2007-W"
+              target="_blank"
+              class="social-link-card"
+            >
+              <i class="fab fa-github"></i> GitHub
+            </a>
+            <a
+              href="mailto:anuththarawickramasekara424@gmail.com"
+              class="social-link-card"
+            >
+              <i class="fas fa-envelope"></i> Email
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mega-footer">
+      <div class="footer-grid">
+        <div class="f-brand">
+          <h2>FullStacked</h2>
+          <p>
+            An elite self-learning platform built for the modern era. Bridging
+            the gap between static theory and dynamic application.
+          </p>
+        </div>
+        <div class="f-col">
+          <h4>Modules</h4>
+          <ul class="f-links">
+            <li><a href="html practice.html">HTML5</a></li>
+            <li><a href="lecture_03_css_master_guide.html">CSS3</a></li>
+            <li><a href="js practise.html">JavaScript</a></li>
+            <li><a href="php practise.html">PHP</a></li>
+          </ul>
+        </div>
+        <div class="f-col">
+          <h4>Platform</h4>
+          <ul class="f-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Resources</a></li>
+          </ul>
+        </div>
+        <div class="f-col newsletter">
+          <h4>Stay Updated</h4>
+          <p style="color: #666; font-size: 12px; margin-bottom: 10px">
+            Weekly tips sent to you.
+          </p>
+          <input type="email" placeholder="email@example.com" />
+          <button>Subscribe</button>
+        </div>
+      </div>
+      <div class="f-bottom">
+        <div style="color: var(--text-dim); font-size: 13px">
+          &copy; 2026 Anuththara Wickramasekara. Galle, Sri Lanka.
+        </div>
+        <div class="socials">
+          <a
+            href="https://www.linkedin.com/in/a-wickramasekara/"
+            target="_blank"
+            class="s-icon"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="s-icon"
+            ><i class="fab fa-github"></i
+          ></a>
+          <a href="mailto:anuththarawickramasekara424@gmail.com" class="s-icon"
+            ><i class="fas fa-envelope"></i
+          ></a>
+          <a
+            href="https://www.codechef.com/users/itz_me_anu"
+            target="_blank"
+            class="s-icon"
+            ><i class="fas fa-code"></i
+          ></a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* --- 1. SIMPLE LOADER --- */
+      gsap.to(".loader-text", {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+      gsap.to(".loader-container", {
+        y: "-100%",
+        duration: 1,
+        ease: "power4.inOut",
+        delay: 1,
+      });
+
+      /* --- 2. LENIS & VELOCITY --- */
+      const lenis = new Lenis({ duration: 1.2, smooth: true });
+      const velocityContainer = document.querySelector(".velocity-content");
+      function raf(time) {
+        lenis.raf(time);
+        let skew = Math.max(Math.min(lenis.velocity * 0.05, 2), -2);
+        if (velocityContainer)
+          velocityContainer.style.transform = `skewY(${skew}deg)`;
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- 3. SCROLL REVEAL --- */
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              gsap.to(entry.target, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: "power2.out",
+              });
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+      document
+        .querySelectorAll(".reveal")
+        .forEach((el) => observer.observe(el));
+
+      /* --- 4. SMART NAVBAR --- */
+      let lastScroll = 0;
+      const navContainer = document.querySelector(".glass-nav-container");
+      window.addEventListener("scroll", () => {
+        const currentScroll = window.scrollY;
+        if (currentScroll > lastScroll && currentScroll > 50) {
+          navContainer.classList.add("nav-hidden");
+        } else {
+          navContainer.classList.remove("nav-hidden");
+        }
+        lastScroll = currentScroll;
+      });
+
+      /* --- 5. THEME & FULLSCREEN --- */
+      const fsToggle = document.getElementById("fsToggle");
+      fsToggle.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          fsToggle.innerHTML = '<i class="fas fa-compress"></i>';
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+            fsToggle.innerHTML = '<i class="fas fa-expand"></i>';
+          }
+        }
+      });
+
+      const themeToggle = document.getElementById("themeToggle");
+      const body = document.body;
+      const themeIcon = themeToggle.querySelector("i");
+      themeToggle.addEventListener("click", () => {
+        body.classList.toggle("light-mode");
+        if (body.classList.contains("light-mode")) {
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+        } else {
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.add("fa-moon");
+        }
+      });
+
+      /* --- 6. PARTICLES --- */
+      const canvas = document.getElementById("particles");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2;
+          this.speedY = Math.random() * 0.5 + 0.1;
+          this.opacity = Math.random() * 0.5;
+        }
+        update() {
+          this.y -= this.speedY;
+          if (this.y < 0) {
+            this.y = canvas.height;
+            this.x = Math.random() * canvas.width;
+          }
+        }
+        draw() {
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      for (let i = 0; i < 60; i++) particles.push(new Particle());
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      /* --- 7. NAV PILL --- */
+      const navLinks = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      navLinks.forEach((l) =>
+        l.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const active = document.querySelector(".nav-link.active");
+          if (active) movePill(active);
+        });
+      setTimeout(() => {
+        const a = document.querySelector(".nav-link.active");
+        if (a) movePill(a);
+      }, 500);
+    </script>
+  </body>
+</html>

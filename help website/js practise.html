@@ -1,0 +1,1411 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MWD Lecture 04: JS Master Guide</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- VARIABLES --- */
+      :root {
+        --ide-bg: rgba(20, 20, 20, 0.6);
+        --ide-border: rgba(255, 255, 255, 0.08);
+        --ide-blur: 40px;
+        --sidebar-bg: rgba(0, 0, 0, 0.3);
+        --text-main: #ffffff;
+        --text-dim: #a0a0a0;
+        --accent: #f7df1e;
+        --accent-glow: rgba(247, 223, 30, 0.4);
+        --accent-text: #000;
+        --code-bg: rgba(0, 0, 0, 0.5);
+        --nav-bg: rgba(10, 10, 10, 0.7);
+        --pill-bg: rgba(255, 255, 255, 0.15);
+        --success: #27c93f;
+        --error: #ff5f56;
+      }
+
+      body.light-mode {
+        --ide-bg: rgba(255, 255, 255, 0.75);
+        --ide-border: rgba(0, 0, 0, 0.1);
+        --sidebar-bg: rgba(255, 255, 255, 0.5);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #e6cd10;
+        --code-bg: rgba(240, 240, 240, 0.7);
+        --nav-bg: rgba(255, 255, 255, 0.85);
+        --pill-bg: rgba(0, 0, 0, 0.05);
+      }
+
+      /* --- RESET --- */
+      * {
+        box-sizing: border-box;
+      }
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: url("https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop")
+          center/cover no-repeat fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 100px;
+      }
+
+      /* --- NAV --- */
+      .glass-nav-container {
+        position: fixed;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        pointer-events: none;
+      }
+      .glass-nav {
+        pointer-events: auto;
+        position: relative;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--ide-border);
+        padding: 6px;
+        border-radius: 60px;
+        display: flex;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link {
+        position: relative;
+        text-decoration: none;
+        color: var(--text-dim);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 28px;
+        border-radius: 50px;
+        z-index: 2;
+        transition: color 0.3s;
+      }
+      .nav-link.active,
+      .nav-link:hover {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        height: calc(100% - 12px);
+        background: var(--pill-bg);
+        border-radius: 50px;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        opacity: 0;
+      }
+
+      /* --- CONTROLS --- */
+      .top-controls {
+        position: fixed;
+        top: 15px;
+        right: 40px;
+        display: flex;
+        gap: 15px;
+        z-index: 1001;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--ide-border);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        backdrop-filter: blur(12px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+        font-size: 16px;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        color: var(--accent-text);
+        transform: scale(1.1);
+        border-color: var(--accent);
+      }
+
+      /* --- IDE WINDOW --- */
+      .ide-window {
+        width: 95%;
+        position: relative;
+        top: -22px;
+        margin-bottom: 30px;
+        max-width: 1800px;
+        height: 88vh;
+        background: var(--ide-bg);
+        backdrop-filter: blur(var(--ide-blur));
+        -webkit-backdrop-filter: blur(var(--ide-blur));
+        border: 1px solid var(--ide-border);
+        box-shadow:
+          0 40px 100px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.3s;
+      }
+      .title-bar {
+        height: 44px;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--ide-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 13px;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .window-controls {
+        position: absolute;
+        left: 18px;
+        display: flex;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .red {
+        background: #ff5f56;
+      }
+      .yellow {
+        background: #ffbd2e;
+      }
+      .green {
+        background: #27c93f;
+      }
+      .ide-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      .activity-bar {
+        width: 60px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--ide-border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 25px;
+      }
+      .icon {
+        width: 26px;
+        height: 26px;
+        fill: var(--text-dim);
+        opacity: 0.6;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .icon.active {
+        fill: var(--accent);
+        opacity: 1;
+        filter: drop-shadow(0 0 8px var(--accent-glow));
+      }
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+      .content-scroll {
+        height: 100%;
+        overflow-y: auto;
+        padding: 50px;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+      }
+
+      /* --- TYPOGRAPHY & ELEMENTS --- */
+      h1 {
+        font-size: 2.2rem;
+        color: var(--text-main);
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--ide-border);
+        padding-bottom: 15px;
+        font-weight: 700;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.6rem;
+        margin-top: 60px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        text-shadow: 0 0 10px var(--accent-glow);
+      }
+      p,
+      li {
+        color: var(--text-dim);
+        line-height: 1.7;
+        font-size: 15px;
+      }
+
+      pre {
+        background: var(--code-bg);
+        padding: 20px;
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #e0e0e0;
+        overflow-x: auto;
+      }
+      code {
+        font-family: "JetBrains Mono";
+      }
+      .tag {
+        color: #569cd6;
+      }
+      .attr {
+        color: #9cdcfe;
+      }
+      .val {
+        color: #ce9178;
+      }
+      .kwd {
+        color: #569cd6;
+      }
+      .str {
+        color: #ce9178;
+      }
+      .fun {
+        color: #dcdcaa;
+      }
+      .num {
+        color: #b5cea8;
+      }
+      .cmt {
+        color: #6a9955;
+        font-style: italic;
+      }
+      .obj {
+        color: #4ec9b0;
+      }
+
+      .demo-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--ide-border);
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+      }
+      .control-panel {
+        background: var(--code-bg);
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .col {
+        flex: 1;
+        min-width: 150px;
+      }
+      input[type="text"],
+      input[type="number"],
+      input[type="password"] {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--ide-border);
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        font-family: "JetBrains Mono";
+        font-size: 13px;
+        outline: none;
+        transition: 0.3s;
+      }
+      input:focus {
+        border-color: var(--accent);
+      }
+      button {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--ide-border);
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      button:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+        box-shadow: 0 0 15px var(--accent-glow);
+      }
+      .visual-stage {
+        background: var(--code-bg);
+        border: 1px dashed var(--ide-border);
+        border-radius: 8px;
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        font-family: "JetBrains Mono";
+      }
+
+      /* --- THEORY SECTION --- */
+      .js-info-panel {
+        background: rgba(247, 223, 30, 0.05);
+        border: 1px solid var(--accent);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 40px;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .info-card h3 {
+        color: var(--accent);
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+      }
+      .info-card ul {
+        padding-left: 20px;
+      }
+      .info-card li {
+        margin-bottom: 5px;
+        font-size: 13px;
+      }
+
+      /* --- MODULE STYLES --- */
+      .array-box {
+        display: flex;
+        gap: 5px;
+      }
+      .array-item {
+        width: 40px;
+        height: 40px;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        border: 1px solid #555;
+        font-weight: bold;
+        animation: popIn 0.3s;
+      }
+      @keyframes popIn {
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .req-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #777;
+      }
+      .req-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .req-item.met {
+        color: var(--success);
+        font-weight: bold;
+      }
+
+      .qa-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid var(--accent);
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 0 6px 6px 0;
+        transition: 0.2s;
+      }
+      .qa-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .qa-question {
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .qa-answer {
+        display: none;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--ide-border);
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* --- FOOTER --- */
+      .site-footer {
+        width: 100%;
+        position: relative;
+        margin-top: auto;
+        background: #050505;
+        color: #888;
+        padding: 60px 0 30px;
+        border-top: 1px solid #222;
+        text-align: center;
+      }
+      .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        justify-content: center;
+      }
+      .social-icon {
+        width: 40px;
+        height: 40px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 1px solid #333;
+        font-size: 18px;
+      }
+      .social-icon:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="html practice.html" class="nav-link">HTML</a>
+        <a href="css practice.html" class="nav-link">CSS</a>
+        <a href="js practise.html" class="nav-link active">JS</a>
+        <a href="jquery practice.html" class="nav-link">Jquery</a>
+        <a href="bootstrap.html" class="nav-link">Bootstrap</a>
+        <a href="php practise.html" class="nav-link">PHP</a>
+      </nav>
+    </div>
+
+    <div class="top-controls">
+      <button class="control-btn" onclick="toggleTheme()">
+        <i class="fas fa-adjust" id="themeIcon"></i>
+      </button>
+      <button class="control-btn" onclick="toggleFullScreen()">
+        <i class="fas fa-expand" id="fsIcon"></i>
+      </button>
+    </div>
+
+    <div class="ide-window">
+      <div class="title-bar">
+        <div class="window-controls">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <span>JS — Visual Studio Code</span>
+      </div>
+
+      <div class="ide-body">
+        <div class="activity-bar">
+          <svg class="icon active" viewBox="0 0 24 24">
+            <path
+              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+            />
+          </svg>
+          <svg class="icon" viewBox="0 0 24 24">
+            <path
+              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+            />
+          </svg>
+        </div>
+
+        <div class="editor-area">
+          <div class="content-scroll" data-lenis-prevent>
+            <h1>JavaScript Guide</h1>
+
+            <div class="js-info-panel">
+              <h2 style="margin-top: 0; border: none; color: var(--text-main)">
+                What is JavaScript?
+              </h2>
+              <p>
+                JavaScript (JS) is a high-level, interpreted programming
+                language primarily used to create interactive effects within web
+                browsers.
+              </p>
+
+              <div class="info-grid">
+                <div class="info-card">
+                  <h3>Features</h3>
+                  <ul>
+                    <li>Dynamic Typing</li>
+                    <li>First-class Functions</li>
+                    <li>Prototype-based OOP</li>
+                    <li>Asynchronous Processing</li>
+                  </ul>
+                </div>
+                <div class="info-card">
+                  <h3>Pros</h3>
+                  <ul>
+                    <li>Runs natively in browser</li>
+                    <li>Versatile (Front & Backend)</li>
+                    <li>Huge Ecosystem (NPM)</li>
+                    <li>Event-driven</li>
+                  </ul>
+                </div>
+                <div class="info-card">
+                  <h3>Cons</h3>
+                  <ul>
+                    <li>Client-side security risks</li>
+                    <li>Dynamic typing bugs</li>
+                    <li>Browser compatibility quirks</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <h2>1. Output & Variables</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <button onclick="runAlert()">alert()</button>
+                  <button onclick="runLog()">console.log()</button>
+                  <button onclick="runWrite()">document.write()</button>
+                </div>
+              </div>
+              <div class="visual-stage" id="outputStage">
+                Click buttons to test output methods.
+              </div>
+              <pre id="codeOutput"><span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="cmt">// Code will appear here</span>
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span></pre>
+            </div>
+
+            <h2>2. Variable Scope (Let vs Var)</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <button onclick="testVar()">Test VAR (Function Scope)</button>
+                  <button onclick="testLet()">Test LET (Block Scope)</button>
+                </div>
+              </div>
+              <div class="visual-stage" id="scopeStage">
+                Waiting for test...
+              </div>
+              <pre id="codeScope"><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">if</span>(true) { ... }
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>3. DOM Text Manipulation 📝</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <input
+                  type="text"
+                  id="domInput"
+                  placeholder="Type something..."
+                  oninput="updateDomText()"
+                />
+              </div>
+              <div class="visual-stage">
+                <h1 id="domTextTarget">Hello World</h1>
+              </div>
+              <pre id="codeDomText"><span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;h1</span> <span class="attr">id</span>=<span class="val">"target"</span><span class="tag">&gt;</span>Hello World<span class="tag">&lt;/h1&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="obj">document</span>.<span class="fun">getElementById</span>(<span class="str">"target"</span>).innerText = val;
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span></pre>
+            </div>
+
+            <h2>4. DOM Style Manipulation</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title">Background</span
+                    ><input
+                      type="color"
+                      oninput="changeBg(this.value)"
+                      value="#f7df1e"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title">Text Color</span
+                    ><input
+                      type="color"
+                      oninput="changeColor(this.value)"
+                      value="#ffffff"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <div
+                  id="styleBox"
+                  style="
+                    padding: 20px;
+                    border-radius: 8px;
+                    background: #f7df1e;
+                    color: black;
+                    font-weight: bold;
+                  "
+                >
+                  Styled Element
+                </div>
+              </div>
+              <pre id="codeStyle"><span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"el"</span><span class="tag">&gt;</span>Box<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="obj">document</span>.<span class="fun">getElementById</span>(<span class="str">"el"</span>).<span class="obj">style</span>.<span class="prop">background</span> = <span class="str">"..."</span>;
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span></pre>
+            </div>
+
+            <h2>5. Event Listeners</h2>
+            <div class="demo-section">
+              <div class="visual-stage">
+                <div
+                  id="eventBox"
+                  style="
+                    width: 150px;
+                    height: 150px;
+                    background: #333;
+                    border: 1px solid #555;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                  "
+                >
+                  Interact Me
+                </div>
+              </div>
+              <div
+                style="margin-top: 10px; font-size: 12px; color: #888"
+                id="eventLog"
+              >
+                Last Event: None
+              </div>
+              <pre><span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"box"</span><span class="tag">&gt;</span>Interact Me<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="obj">document</span>.<span class="fun">getElementById</span>(<span class="str">"box"</span>).<span class="fun">addEventListener</span>(<span class="str">"click"</span>, fn);
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span></pre>
+            </div>
+
+            <h2>6. ClassList Toggle</h2>
+            <div class="demo-section">
+              <button onclick="toggleBox()">Toggle Hide/Show</button>
+              <div class="visual-stage" style="margin-top: 10px">
+                <div
+                  id="toggleBox"
+                  style="width: 50px; height: 50px; background: var(--accent)"
+                ></div>
+              </div>
+              <pre
+                id="codeToggle"
+              ><span class="tag">&lt;style&gt;</span> .hidden { display: none; } <span class="tag">&lt;/style&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"box"</span> <span class="attr">class</span>=<span class="val">"hidden"</span><span class="tag">&gt;&lt;/div&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="obj">el</span>.<span class="obj">classList</span>.<span class="fun">toggle</span>(<span class="str">"hidden"</span>);
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span></pre>
+            </div>
+
+            <h2>7. String Methods</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <input type="text" id="strInput" value="JavaScript" disabled />
+                <div class="row" style="margin-top: 10px">
+                  <button onclick="strMethod('upper')">.toUpperCase()</button>
+                  <button onclick="strMethod('length')">.length</button>
+                  <button onclick="strMethod('split')">.split('')</button>
+                </div>
+              </div>
+              <div class="visual-stage" id="strOutput">JAVASCRIPT</div>
+              <pre id="codeStr"><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">let</span> str = <span class="str">"JavaScript"</span>;
+  <span class="obj">console</span>.<span class="fun">log</span>(str.<span class="fun">toUpperCase</span>());
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>8. Math Object</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <button onclick="doMath('random')">Math.random()</button>
+                  <button onclick="doMath('floor')">Math.floor()</button>
+                  <button onclick="doMath('round')">Math.round()</button>
+                </div>
+              </div>
+              <div
+                class="visual-stage"
+                id="mathOutput"
+                style="font-size: 24px; color: var(--accent)"
+              >
+                0
+              </div>
+              <pre id="codeMath"><span class="tag">&lt;script&gt;</span>
+  <span class="obj">Math</span>.<span class="fun">random</span>();
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>9. Array Manipulation</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <button onclick="arrPush()">.push()</button>
+                  <button onclick="arrPop()">.pop()</button>
+                  <button onclick="arrShift()">.shift()</button>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <div id="arrayContainer" class="array-box"></div>
+              </div>
+              <pre id="codeArray"><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">let</span> arr = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>10. Objects & JSON</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <input
+                  type="text"
+                  id="objRole"
+                  placeholder="Change Role (e.g. Admin)"
+                />
+                <button onclick="updateObj()">Update Object</button>
+              </div>
+              <div class="visual-stage">
+                <pre
+                  id="objOutput"
+                  style="border: none; background: transparent"
+                >
+{ "name": "John", "role": "User" }</pre
+                >
+              </div>
+              <pre id="codeObj"><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">let</span> user = { <span class="attr">name</span>: <span class="str">"John"</span>, <span class="attr">role</span>: <span class="str">"User"</span> };
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>11. Date Object</h2>
+            <div class="demo-section">
+              <div
+                class="visual-stage"
+                id="clockBox"
+                style="font-family: monospace; font-size: 20px"
+              >
+                00:00:00
+              </div>
+              <pre><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">new</span> <span class="fun">Date</span>().<span class="fun">toLocaleTimeString</span>();
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>12-15. Master Class: Form Validation</h2>
+            <div
+              class="demo-section"
+              style="display: flex; flex-wrap: wrap; gap: 20px"
+            >
+              <div style="flex: 1; min-width: 300px">
+                <div style="margin-bottom: 15px">
+                  <label style="font-size: 12px; color: #888"
+                    >12. Required Field</label
+                  >
+                  <input
+                    type="text"
+                    id="vReq"
+                    placeholder="Cannot be empty"
+                    onkeyup="checkReq()"
+                  />
+                  <div
+                    id="msgReq"
+                    style="font-size: 11px; margin-top: 2px"
+                  ></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <label style="font-size: 12px; color: #888"
+                    >13. Numeric Only (Age/Phone)</label
+                  >
+                  <input
+                    type="text"
+                    id="vNum"
+                    placeholder="123..."
+                    onkeyup="checkNum()"
+                  />
+                  <div
+                    id="msgNum"
+                    style="font-size: 11px; margin-top: 2px"
+                  ></div>
+                </div>
+                <div style="margin-bottom: 15px">
+                  <label style="font-size: 12px; color: #888"
+                    >14. Email Regex</label
+                  >
+                  <input
+                    type="text"
+                    id="vEmail"
+                    placeholder="user@domain.com"
+                    onkeyup="checkEmail()"
+                  />
+                  <div
+                    id="msgEmail"
+                    style="font-size: 11px; margin-top: 2px"
+                  ></div>
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 300px">
+                <label style="font-size: 12px; color: #888"
+                  >15. Password Strength Regex</label
+                >
+                <input
+                  type="password"
+                  id="vPass"
+                  placeholder="Complex Password"
+                  onkeyup="checkPass()"
+                />
+                <ul class="req-list">
+                  <li id="rLen" class="req-item">
+                    <i class="fas fa-circle" style="font-size: 8px"></i> 8+
+                    Chars
+                  </li>
+                  <li id="rNum" class="req-item">
+                    <i class="fas fa-circle" style="font-size: 8px"></i> Number
+                  </li>
+                  <li id="rCap" class="req-item">
+                    <i class="fas fa-circle" style="font-size: 8px"></i>
+                    Uppercase
+                  </li>
+                  <li id="rSym" class="req-item">
+                    <i class="fas fa-circle" style="font-size: 8px"></i> Special
+                    Char
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <pre id="codeValid"><span class="tag">&lt;form&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"text"</span> <span class="attr">id</span>=<span class="val">"email"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="kwd">const</span> re = <span class="str">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>;
+    re.<span class="fun">test</span>(val);
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/form&gt;</span></pre>
+
+            <h2>16. LocalStorage</h2>
+            <div class="demo-section">
+              <input
+                type="text"
+                id="lsInput"
+                placeholder="Enter name to save..."
+              />
+              <div class="row" style="margin-top: 10px">
+                <button onclick="lsSave()">Save</button>
+                <button onclick="lsLoad()">Load</button>
+                <button onclick="lsClear()">Clear</button>
+              </div>
+              <div
+                id="lsStatus"
+                style="color: var(--accent); margin-top: 10px; font-size: 12px"
+              >
+                Status: Idle
+              </div>
+              <pre id="codeLS"><span class="tag">&lt;script&gt;</span>
+  <span class="obj">localStorage</span>.<span class="fun">setItem</span>(<span class="str">"key"</span>, val);
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h2>17. Fetch API Simulator</h2>
+            <div class="demo-section">
+              <button onclick="simFetch()">Fetch User Data (2s Delay)</button>
+              <div
+                class="visual-stage"
+                id="fetchStage"
+                style="margin-top: 10px"
+              >
+                <span style="color: #666">// Click button to fetch</span>
+              </div>
+              <pre id="codeFetch"><span class="tag">&lt;script&gt;</span>
+  <span class="kwd">async function</span> <span class="fun">getData</span>() {
+    <span class="kwd">const</span> res = <span class="kwd">await</span> <span class="fun">fetch</span>(<span class="str">"api/user"</span>);
+    <span class="kwd">const</span> data = <span class="kwd">await</span> res.<span class="fun">json</span>();
+  }
+<span class="tag">&lt;/script&gt;</span></pre>
+            </div>
+
+            <h1
+              style="
+                color: var(--accent);
+                border: none;
+                text-align: center;
+                margin-top: 60px;
+              "
+            >
+              20 JS Exam Questions
+            </h1>
+            <p style="text-align: center; margin-bottom: 30px">
+              Click to reveal answers
+            </p>
+            <div id="quizContainer"></div>
+            <div style="height: 100px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 0 30px">
+        <h3 style="color: var(--text-main); margin-bottom: 10px">
+          Contact & Connect
+        </h3>
+        <p>Galle, Sri Lanka • anuththarawickramasekara424@gmail.com</p>
+        <div class="social-links">
+          <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+        </div>
+        <p style="font-size: 12px; opacity: 0.6; margin-top: 30px">
+          Built by Anuththara Wickramasekara © 2026
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      /* --- LENIS SETUP --- */
+      const lenis = new Lenis();
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- NAV LOGIC --- */
+      const navLinks = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      navLinks.forEach((link) =>
+        link.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      const activeLink = document.querySelector(".nav-link.active");
+      if (activeLink) movePill(activeLink);
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          if (activeLink) movePill(activeLink);
+        });
+
+      function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+      }
+      function toggleFullScreen() {
+        if (!document.fullscreenElement)
+          document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+
+      /* --- HELPER: RENDER CODE --- */
+      function renderCode(id, code) {
+        document.getElementById(id).innerHTML = code;
+      }
+
+      /* ==================== 1. OUTPUT ==================== */
+      function runAlert() {
+        alert("Hello World from JS!");
+      }
+      function runLog() {
+        document.getElementById("outputStage").innerText =
+          "Check your browser console (F12)!";
+        console.log("Hello from Console!");
+      }
+      function runWrite() {
+        document.getElementById("outputStage").innerHTML =
+          "<h3>document.write('Hello');</h3>";
+      }
+
+      /* ==================== 2. SCOPE ==================== */
+      function testVar() {
+        document.getElementById("scopeStage").innerText =
+          "VAR is function scoped. Accessible outside blocks.";
+        renderCode(
+          "codeScope",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">if</span>(true) { <span class="kwd">var</span> x = <span class="str">"Hi"</span>; } <span class="cmt">// x is accessible</span>\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+      function testLet() {
+        document.getElementById("scopeStage").innerText =
+          "LET is block scoped. Error if accessed outside.";
+        renderCode(
+          "codeScope",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">if</span>(true) { <span class="kwd">let</span> x = <span class="str">"Hi"</span>; } <span class="cmt">// x is NOT accessible</span>\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+
+      /* ==================== 3. DOM TEXT ==================== */
+      function updateDomText() {
+        const val = document.getElementById("domInput").value;
+        document.getElementById("domTextTarget").innerText =
+          val || "Hello World";
+        renderCode(
+          "codeDomText",
+          `<span class="tag">&lt;body&gt;</span>\n  <span class="tag">&lt;h1</span> <span class="attr">id</span>=<span class="val">"target"</span><span class="tag">&gt;</span>${val || "Hello"}<span class="tag">&lt;/h1&gt;</span>\n  <span class="tag">&lt;script&gt;</span>\n    <span class="obj">document</span>.<span class="fun">getElementById</span>(<span class="str">"target"</span>).innerText = <span class="str">"${val}"</span>;\n  <span class="tag">&lt;/script&gt;</span>\n<span class="tag">&lt;/body&gt;</span>`,
+        );
+      }
+
+      /* ==================== 4. DOM STYLE ==================== */
+      function changeBg(col) {
+        document.getElementById("styleBox").style.backgroundColor = col;
+        renderCode(
+          "codeStyle",
+          `<span class="tag">&lt;body&gt;</span>\n  <span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"el"</span><span class="tag">&gt;</span>Box<span class="tag">&lt;/div&gt;</span>\n  <span class="tag">&lt;script&gt;</span>\n    <span class="obj">document</span>.<span class="fun">getElementById</span>(<span class="str">"el"</span>).<span class="obj">style</span>.<span class="prop">background</span> = <span class="str">"${col}"</span>;\n  <span class="tag">&lt;/script&gt;</span>\n<span class="tag">&lt;/body&gt;</span>`,
+        );
+      }
+      function changeColor(col) {
+        document.getElementById("styleBox").style.color = col;
+      }
+
+      /* ==================== 5. EVENTS ==================== */
+      const eBox = document.getElementById("eventBox");
+      const eLog = document.getElementById("eventLog");
+      eBox.addEventListener(
+        "click",
+        () => (eLog.innerText = "Last Event: Clicked!"),
+      );
+      eBox.addEventListener(
+        "mouseover",
+        () => (eLog.innerText = "Last Event: Mouse Over"),
+      );
+      eBox.addEventListener(
+        "mouseout",
+        () => (eLog.innerText = "Last Event: Mouse Out"),
+      );
+
+      /* ==================== 6. TOGGLE ==================== */
+      function toggleBox() {
+        const b = document.getElementById("toggleBox");
+        const isHidden = b.style.display === "none";
+        b.style.display = isHidden ? "block" : "none";
+        renderCode(
+          "codeToggle",
+          `<span class="tag">&lt;style&gt;</span> .hidden { display: none; } <span class="tag">&lt;/style&gt;</span>\n<span class="tag">&lt;body&gt;</span>\n  <span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"box"</span> <span class="attr">class</span>=<span class="val">"${isHidden ? "" : "hidden"}"</span><span class="tag">&gt;&lt;/div&gt;</span>\n  <span class="tag">&lt;script&gt;</span>\n    <span class="obj">el</span>.<span class="obj">classList</span>.<span class="fun">toggle</span>(<span class="str">"hidden"</span>);\n  <span class="tag">&lt;/script&gt;</span>\n<span class="tag">&lt;/body&gt;</span>`,
+        );
+      }
+
+      /* ==================== 7. STRING METHODS ==================== */
+      function strMethod(m) {
+        let v = "JavaScript";
+        let c = "";
+        if (m === "upper") {
+          v = v.toUpperCase();
+          c = "str.toUpperCase()";
+        }
+        if (m === "length") {
+          v = v.length;
+          c = "str.length";
+        }
+        if (m === "split") {
+          v = "[" + v.split("").join(", ") + "]";
+          c = "str.split('')";
+        }
+        document.getElementById("strOutput").innerText = v;
+        renderCode(
+          "codeStr",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">let</span> str = <span class="str">"JavaScript"</span>;\n  <span class="obj">console</span>.<span class="fun">log</span>(${c});\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+
+      /* ==================== 8. MATH ==================== */
+      function doMath(m) {
+        let v = 0;
+        let r = Math.random() * 10;
+        let c = "";
+        if (m === "random") {
+          v = r.toFixed(4);
+          c = "Math.random()";
+        }
+        if (m === "floor") {
+          v = Math.floor(r);
+          c = `Math.floor(${r.toFixed(2)})`;
+        }
+        if (m === "round") {
+          v = Math.round(r);
+          c = `Math.round(${r.toFixed(2)})`;
+        }
+        document.getElementById("mathOutput").innerText = v;
+        renderCode(
+          "codeMath",
+          `<span class="tag">&lt;script&gt;</span>\n  ${c};\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+
+      /* ==================== 9. ARRAYS ==================== */
+      let myArr = [1, 2, 3];
+      function renderArr() {
+        const c = document.getElementById("arrayContainer");
+        c.innerHTML = "";
+        myArr.forEach((i) => {
+          const d = document.createElement("div");
+          d.className = "array-item";
+          d.innerText = i;
+          c.appendChild(d);
+        });
+        document.getElementById("codeArray").innerHTML =
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">let</span> arr = [${myArr.join(", ")}];\n<span class="tag">&lt;/script&gt;</span>`;
+      }
+      renderArr();
+      function arrPush() {
+        myArr.push(myArr.length + 1);
+        renderArr();
+      }
+      function arrPop() {
+        myArr.pop();
+        renderArr();
+      }
+      function arrShift() {
+        myArr.shift();
+        renderArr();
+      }
+
+      /* ==================== 10. OBJECTS ==================== */
+      let myObj = { name: "John", role: "User" };
+      function updateObj() {
+        const r = document.getElementById("objRole").value;
+        if (r) myObj.role = r;
+        document.getElementById("objOutput").innerText = JSON.stringify(
+          myObj,
+          null,
+          2,
+        );
+        renderCode(
+          "codeObj",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">let</span> user = { <span class="attr">name</span>: <span class="str">"John"</span>, <span class="attr">role</span>: <span class="str">"${myObj.role}"</span> };\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+
+      /* ==================== 11. DATE ==================== */
+      setInterval(() => {
+        document.getElementById("clockBox").innerText =
+          new Date().toLocaleTimeString();
+      }, 1000);
+
+      /* ==================== 12-15. VALIDATION ==================== */
+      function checkReq() {
+        const v = document.getElementById("vReq").value;
+        const msg = document.getElementById("msgReq");
+        if (v === "") {
+          msg.innerText = "Required!";
+          msg.style.color = "var(--error)";
+        } else {
+          msg.innerText = "OK";
+          msg.style.color = "var(--success)";
+        }
+      }
+      function checkNum() {
+        const v = document.getElementById("vNum").value;
+        const msg = document.getElementById("msgNum");
+        if (isNaN(v) || v === "") {
+          msg.innerText = "Must be a number";
+          msg.style.color = "var(--error)";
+        } else {
+          msg.innerText = "Valid Number";
+          msg.style.color = "var(--success)";
+        }
+      }
+      function checkEmail() {
+        const v = document.getElementById("vEmail").value;
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const msg = document.getElementById("msgEmail");
+        if (re.test(v)) {
+          msg.innerText = "Valid Email";
+          msg.style.color = "var(--success)";
+        } else {
+          msg.innerText = "Invalid Format";
+          msg.style.color = "var(--error)";
+        }
+      }
+      function checkPass() {
+        const v = document.getElementById("vPass").value;
+        const len = v.length >= 8;
+        const num = /\d/.test(v);
+        const cap = /[A-Z]/.test(v);
+        const sym = /[!@#$%^&*]/.test(v);
+        updRule("rLen", len);
+        updRule("rNum", num);
+        updRule("rCap", cap);
+        updRule("rSym", sym);
+      }
+      function updRule(id, ok) {
+        const el = document.getElementById(id);
+        if (ok) {
+          el.classList.add("met");
+          el.querySelector("i").className = "fas fa-check-circle";
+        } else {
+          el.classList.remove("met");
+          el.querySelector("i").className = "fas fa-circle";
+        }
+      }
+
+      /* ==================== 16. LOCAL STORAGE ==================== */
+      function lsSave() {
+        const v = document.getElementById("lsInput").value;
+        localStorage.setItem("js_demo", v);
+        document.getElementById("lsStatus").innerText =
+          "Saved to Browser Storage!";
+        renderCode(
+          "codeLS",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="obj">localStorage</span>.<span class="fun">setItem</span>(<span class="str">"key"</span>, "${v}");\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+      function lsLoad() {
+        const v = localStorage.getItem("js_demo");
+        document.getElementById("lsInput").value = v || "";
+        document.getElementById("lsStatus").innerText = v
+          ? "Loaded: " + v
+          : "Nothing found";
+        renderCode(
+          "codeLS",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="kwd">let</span> val = <span class="obj">localStorage</span>.<span class="fun">getItem</span>(<span class="str">"key"</span>);\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+      function lsClear() {
+        localStorage.removeItem("js_demo");
+        document.getElementById("lsStatus").innerText = "Storage Cleared";
+        renderCode(
+          "codeLS",
+          `<span class="tag">&lt;script&gt;</span>\n  <span class="obj">localStorage</span>.<span class="fun">removeItem</span>(<span class="str">"key"</span>);\n<span class="tag">&lt;/script&gt;</span>`,
+        );
+      }
+
+      /* ==================== 17. FETCH API ==================== */
+      function simFetch() {
+        const s = document.getElementById("fetchStage");
+        s.innerHTML = `<i class="fas fa-spinner fa-spin" style="font-size:24px; color:var(--accent)"></i>`;
+        setTimeout(() => {
+          s.innerHTML = `<span class="obj">{</span> "id": <span class="num">101</span>, "name": <span class="str">"Alex"</span> <span class="obj">}</span>`;
+        }, 2000);
+      }
+
+      /* ==================== EXAM QUESTIONS ==================== */
+      const questions = [
+        {
+          q: "1. Which tag is used to insert JavaScript?",
+          a: "&lt;script&gt;",
+        },
+        {
+          q: "2. How do you write 'Hello World' in an alert box?",
+          a: "alert('Hello World');",
+        },
+        {
+          q: "3. How do you create a function in JavaScript?",
+          a: "function myFunction()",
+        },
+        {
+          q: "4. How do you call a function named 'myFunction'?",
+          a: "myFunction()",
+        },
+        {
+          q: "5. How to write an IF statement in JavaScript?",
+          a: "if (i == 5)",
+        },
+        {
+          q: "6. How to write an IF statement if 'i' is NOT equal to 5?",
+          a: "if (i != 5)",
+        },
+        { q: "7. How does a WHILE loop start?", a: "while (i <= 10)" },
+        { q: "8. How does a FOR loop start?", a: "for (i = 0; i <= 5; i++)" },
+        {
+          q: "9. How can you add a comment in a JavaScript?",
+          a: "// This is a comment",
+        },
+        {
+          q: "10. Correct way to write a JavaScript array?",
+          a: "var colors = ['red', 'green', 'blue']",
+        },
+        { q: "11. Round 7.25 to the nearest integer?", a: "Math.round(7.25)" },
+        { q: "12. Find the highest value of x and y?", a: "Math.max(x, y)" },
+        { q: "13. Syntax for opening a new window?", a: "window.open('url');" },
+        { q: "14. Event when user clicks an HTML element?", a: "onclick" },
+        { q: "15. Check if a variable is NOT a number?", a: "isNaN(variable)" },
+        { q: "16. Operator to assign a value?", a: "=" },
+        { q: "17. Boolean(10 > 9) returns?", a: "true" },
+        { q: "18. Is JavaScript case-sensitive?", a: "Yes" },
+        { q: "19. Convert JSON string to object?", a: "JSON.parse()" },
+        { q: "20. Declare variable that cannot be reassigned?", a: "const" },
+      ];
+
+      const quizCont = document.getElementById("quizContainer");
+      questions.forEach((q) => {
+        const card = document.createElement("div");
+        card.className = "qa-card";
+        card.innerHTML = `<div class="qa-question">${q.q} <span>▼</span></div><div class="qa-answer">${q.a}</div>`;
+        card.onclick = function () {
+          $(this).find(".qa-answer").slideToggle();
+        };
+        quizCont.appendChild(card);
+      });
+    </script>
+  </body>
+</html>

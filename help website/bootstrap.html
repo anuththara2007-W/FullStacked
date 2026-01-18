@@ -1,0 +1,1795 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MWD Lecture 04: Bootstrap 5 Master Lab</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- VARIABLES --- */
+      :root {
+        /* Premium Liquid Glass Theme */
+        --ide-bg: rgba(20, 20, 20, 0.7);
+        --ide-border: rgba(255, 255, 255, 0.08);
+        --ide-blur: 40px;
+        --sidebar-bg: rgba(0, 0, 0, 0.3);
+
+        --text-main: #ffffff;
+        --text-dim: #a0a0a0;
+
+        /* THEME ACCENT (Purple/Blue Hybrid) */
+        --accent: #712cf9;
+        --accent-glow: rgba(113, 44, 249, 0.5);
+
+        --code-bg: rgba(0, 0, 0, 0.5);
+        --nav-bg: rgba(10, 10, 10, 0.7);
+        --pill-bg: rgba(255, 255, 255, 0.15);
+
+        /* BOOTSTRAP OVERRIDES (Connecting Theme to BS Classes) */
+        --bs-primary: #712cf9;
+        --bs-primary-rgb: 113, 44, 249;
+        --bs-body-bg: transparent;
+        --bs-body-color: var(--text-main);
+      }
+
+      body.light-mode {
+        --ide-bg: rgba(255, 255, 255, 0.75);
+        --ide-border: rgba(0, 0, 0, 0.1);
+        --sidebar-bg: rgba(255, 255, 255, 0.5);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #0d6efd;
+        --code-bg: rgba(240, 240, 240, 0.7);
+        --nav-bg: rgba(255, 255, 255, 0.85);
+        --pill-bg: rgba(0, 0, 0, 0.05);
+
+        /* Light Mode Bootstrap Overrides */
+        --bs-primary: #0d6efd;
+        --bs-primary-rgb: 13, 110, 253;
+      }
+
+      /* --- RESET --- */
+      * {
+        box-sizing: border-box;
+        outline: none;
+      }
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop")
+          center/cover no-repeat fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 100px;
+      }
+
+      /* BOOTSTRAP ELEMENT FIXES */
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        color: var(--text-main);
+      }
+      .text-body {
+        color: var(--text-main) !important;
+      }
+      .form-control,
+      .form-select {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-color: var(--ide-border);
+        color: var(--text-main);
+      }
+      .form-control:focus {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: var(--text-main);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.25rem var(--accent-glow);
+      }
+
+      /* --- NAV --- */
+      .glass-nav-container {
+        position: fixed;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1050;
+        pointer-events: none;
+      }
+      .glass-nav {
+        pointer-events: auto;
+        position: relative;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--ide-border);
+        padding: 6px;
+        border-radius: 60px;
+        display: flex;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link-custom {
+        position: relative;
+        text-decoration: none;
+        color: var(--text-dim);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 24px;
+        border-radius: 50px;
+        z-index: 2;
+        transition: color 0.3s;
+      }
+      .nav-link-custom.active,
+      .nav-link-custom:hover {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        height: calc(100% - 12px);
+        background: var(--pill-bg);
+        border-radius: 50px;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        opacity: 0;
+      }
+
+      /* --- TOP CONTROLS --- */
+      .top-controls {
+        position: fixed;
+        top: 15px;
+        right: 40px;
+        display: flex;
+        gap: 15px;
+        z-index: 1051;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--ide-border);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        backdrop-filter: blur(12px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+        font-size: 16px;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        transform: scale(1.1);
+        border-color: var(--accent);
+      }
+
+      /* --- IDE WINDOW --- */
+      .ide-window {
+        width: 95%;
+        position: relative;
+        top: -22px;
+        margin-bottom: 30px;
+        max-width: 1800px;
+        height: 88vh;
+        background: var(--ide-bg);
+        backdrop-filter: blur(var(--ide-blur));
+        -webkit-backdrop-filter: blur(var(--ide-blur));
+        border: 1px solid var(--ide-border);
+        box-shadow:
+          0 40px 100px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.3s;
+      }
+
+      .title-bar {
+        height: 44px;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--ide-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 13px;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .window-controls {
+        position: absolute;
+        left: 18px;
+        display: flex;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .red {
+        background: #ff5f56;
+      }
+      .yellow {
+        background: #ffbd2e;
+      }
+      .green {
+        background: #27c93f;
+      }
+
+      .ide-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .activity-bar {
+        width: 60px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--ide-border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 25px;
+      }
+      .sidebar-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-dim);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 18px;
+        text-decoration: none;
+      }
+      .sidebar-icon:hover,
+      .sidebar-icon.active {
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 15px var(--accent-glow);
+      }
+
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .content-scroll {
+        height: 100%;
+        overflow-y: auto;
+        padding: 50px;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+      }
+      .content-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .content-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .content-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
+      .content-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* --- LAB CONTENT --- */
+      h1 {
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--ide-border);
+        padding-bottom: 15px;
+        font-weight: 700;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.6rem;
+        margin-top: 60px;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+
+      .intro-poem {
+        background: linear-gradient(
+          90deg,
+          rgba(113, 44, 249, 0.1),
+          transparent
+        );
+        border-left: 4px solid var(--accent);
+        padding: 20px;
+        margin-bottom: 40px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.8;
+      }
+      .intro-poem span {
+        display: block;
+      }
+
+      .lab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 25px;
+      }
+      .lab-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--ide-border);
+        border-radius: 12px;
+        padding: 25px;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .lab-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-4px);
+      }
+
+      .lab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #888;
+        letter-spacing: 1px;
+      }
+
+      .visual-stage {
+        background: var(--code-bg);
+        border: 1px dashed var(--ide-border);
+        border-radius: 8px;
+        min-height: 120px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background-image: radial-gradient(
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 1px
+        );
+        background-size: 20px 20px;
+      }
+      .stage-block {
+        display: block;
+        width: 100%;
+      }
+
+      /* Controls */
+      .ctrl-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 5px;
+      }
+      .ctrl-btn {
+        flex: 1;
+        padding: 8px 16px;
+        font-size: 12px;
+        font-family: "Plus Jakarta Sans";
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--ide-border);
+        color: var(--text-main);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+      }
+      .ctrl-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+        cursor: pointer;
+        height: 4px;
+        border-radius: 2px;
+      }
+
+      /* Code Block */
+      pre {
+        background: var(--code-bg);
+        padding: 20px;
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: #e0e0e0;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        margin: 0;
+        line-height: 1.5;
+      }
+      .tag {
+        color: #569cd6;
+      }
+      .attr {
+        color: #9cdcfe;
+      }
+      .val {
+        color: #ce9178;
+      }
+
+      /* Exam Section */
+      .qa-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid var(--accent);
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 0 6px 6px 0;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .qa-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .q-head {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .q-ans {
+        display: none;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--ide-border);
+        color: var(--text-dim);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* FOOTER & CTA */
+      .site-footer {
+        width: 100%;
+        position: relative;
+        margin-top: auto;
+        background: #050505;
+        color: #888;
+        padding: 60px 0 30px;
+        border-top: 1px solid #222;
+      }
+      .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .social-icon {
+        width: 40px;
+        height: 40px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 1px solid #333;
+        font-size: 18px;
+      }
+      .social-icon:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .w3-cta {
+        width: 95%;
+        max-width: 800px;
+        margin: 0 auto 50px auto;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--accent);
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .w3-btn {
+        background: #04aa6d;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 25px;
+        transition: 0.3s;
+        display: inline-block;
+      }
+      .w3-btn:hover {
+        background: #059862;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(4, 170, 109, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link-custom">Home</a>
+        <a href="html practice.html" class="nav-link-custom">HTML</a>
+        <a href="css practice.html" class="nav-link-custom">CSS</a>
+        <a href="js practise.html" class="nav-link-custom">JS</a>
+        <a href="jquery practice.html" class="nav-link-custom">Jquery</a>
+        <a
+          href="bootstrap.html"
+          class="nav-link-custom active"
+          onclick="setActive(this)"
+          >Bootstrap</a
+        >
+        <a href="php practise.html" class="nav-link-custom">PHP</a>
+      </nav>
+    </div>
+
+    <div class="top-controls">
+      <button class="control-btn" onclick="toggleTheme()">
+        <i class="fas fa-adjust" id="themeIcon"></i>
+      </button>
+      <button class="control-btn" onclick="toggleFullScreen()">
+        <i class="fas fa-expand" id="fsIcon"></i>
+      </button>
+    </div>
+
+    <div class="ide-window">
+      <div class="title-bar">
+        <div class="window-controls">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <span>Bootstrap 5 — Visual Studio Code</span>
+      </div>
+
+      <div class="ide-body">
+        <div class="activity-bar">
+          <a href="#layout" class="sidebar-icon" title="Layout"
+            ><i class="fas fa-th-large"></i
+          ></a>
+          <a href="#forms" class="sidebar-icon" title="Forms"
+            ><i class="fas fa-edit"></i
+          ></a>
+          <a href="#components" class="sidebar-icon" title="Components"
+            ><i class="fas fa-cubes"></i
+          ></a>
+          <a href="#utils" class="sidebar-icon" title="Utilities"
+            ><i class="fas fa-wrench"></i
+          ></a>
+          <div style="flex: 1"></div>
+          <a href="#exam" class="sidebar-icon" title="Exam"
+            ><i class="fas fa-graduation-cap"></i
+          ></a>
+        </div>
+
+        <div class="editor-area">
+          <div class="content-scroll" data-lenis-prevent>
+            <div id="intro">
+              <h1>
+                Bootstrap 5 <span style="color: var(--accent)">Mega Lab</span>
+              </h1>
+              <p class="text-secondary mb-4">
+                50+ Interactive Live Demos • Source Code Generator • Instant
+                Preview
+              </p>
+              <div class="intro-poem">
+                <span>1.1 Import the CDN, let the styles cascade.</span>
+                <span>1.2 Rows and Columns, the foundation is laid.</span>
+                <span>1.3 Utilities for spacing, colors so bright.</span>
+                <span
+                  >1.4 Components ready, making responsive layout light.</span
+                >
+                <span>1.5 From Flexbox to Grid, master the view.</span>
+                <span>1.6 This Mega Lab was built just for you.</span>
+              </div>
+            </div>
+
+            <h2 id="layout"><i class="fas fa-th"></i> 1. Layout & Grid</h2>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-header"><span>01. Containers</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('cont', 'container')">
+                    Fixed
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('cont', 'container-fluid')"
+                  >
+                    Fluid
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <div
+                    id="contTarget"
+                    class="container bg-primary bg-opacity-50 p-3 text-center border border-primary rounded text-white transition"
+                  >
+                    Resize Me
+                  </div>
+                </div>
+                <pre id="code_cont"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>02. Grid System</span></div>
+                <input
+                  type="range"
+                  min="1"
+                  max="11"
+                  value="6"
+                  oninput="updGrid(this.value)"
+                />
+                <div class="visual-stage stage-block">
+                  <div class="row g-2">
+                    <div id="gridLeft" class="col-6">
+                      <div
+                        class="p-2 bg-info bg-opacity-25 border border-info text-center text-info"
+                      >
+                        .col-<span id="gridVal">6</span>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div
+                        class="p-2 bg-secondary bg-opacity-25 border border-secondary text-center text-secondary"
+                      >
+                        Auto
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <pre id="code_grid"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>03. Gutters (Gap)</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('gut', 'g-0')">
+                    g-0
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('gut', 'g-3')">
+                    g-3
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('gut', 'g-5')">
+                    g-5
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <div id="gutTarget" class="row g-0">
+                    <div class="col-6">
+                      <div class="p-3 bg-dark border text-white">Col</div>
+                    </div>
+                    <div class="col-6">
+                      <div class="p-3 bg-dark border text-white">Col</div>
+                    </div>
+                  </div>
+                </div>
+                <pre id="code_gut"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>04. Flex Align</span></div>
+                <div class="ctrl-group">
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('align', 'justify-content-start')"
+                  >
+                    Start
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('align', 'justify-content-center')"
+                  >
+                    Center
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('align', 'justify-content-between')"
+                  >
+                    Between
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <div
+                    id="alignTarget"
+                    class="d-flex justify-content-start bg-light bg-opacity-10 border p-2"
+                  >
+                    <div class="p-2 bg-warning text-dark border">1</div>
+                    <div class="p-2 bg-warning text-dark border">2</div>
+                  </div>
+                </div>
+                <pre id="code_align"></pre>
+              </div>
+            </div>
+
+            <h2 id="content">
+              <i class="fas fa-font"></i> 2. Content & Typography
+            </h2>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-header"><span>05. Display Text</span></div>
+                <input
+                  type="range"
+                  min="1"
+                  max="6"
+                  value="1"
+                  oninput="updDisplay(this.value)"
+                />
+                <div class="visual-stage">
+                  <h1 id="dispTarget" class="display-1 m-0">Hello</h1>
+                </div>
+                <pre id="code_disp"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>06. Text Colors</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('txt', 'text-primary')">
+                    Primary
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('txt', 'text-success')">
+                    Success
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('txt', 'text-danger')">
+                    Danger
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('txt', 'text-warning')">
+                    Warn
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('txt', 'text-info')">
+                    Info
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <h3 id="txtTarget" class="text-primary m-0">Colorize</h3>
+                </div>
+                <pre id="code_txt"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>07. Lead Paragraph</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('lead', 'lead')">
+                    On
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('lead', '')">
+                    Off
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <p id="leadTarget" class="lead text-white">
+                    This is a lead paragraph meant to stand out.
+                  </p>
+                </div>
+                <pre id="code_lead"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>08. Image Styles</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('img', 'rounded')">
+                    Round
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('img', 'rounded-circle')"
+                  >
+                    Circle
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('img', 'img-thumbnail')"
+                  >
+                    Thumb
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <img
+                    id="imgTarget"
+                    src="https://via.placeholder.com/100"
+                    class="rounded"
+                    alt=".."
+                  />
+                </div>
+                <pre id="code_img"></pre>
+              </div>
+            </div>
+
+            <h2 id="forms"><i class="fas fa-edit"></i> 3. Forms</h2>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-header"><span>09. Controls & Sizes</span></div>
+                <div class="ctrl-group">
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('inp', 'form-control-sm')"
+                  >
+                    Small
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('inp', '')">
+                    Default
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('inp', 'form-control-lg')"
+                  >
+                    Large
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <input
+                    id="inpTarget"
+                    class="form-control"
+                    type="text"
+                    placeholder="Type here..."
+                  />
+                </div>
+                <pre id="code_inp"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>10. Floating Labels</span></div>
+                <div class="visual-stage stage-block">
+                  <div class="form-floating text-dark">
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="floatIn"
+                      placeholder="name@example.com"
+                    />
+                    <label for="floatIn">Email address</label>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"form-floating"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/div&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>11. Input Group</span></div>
+                <div class="visual-stage stage-block">
+                  <div class="input-group">
+                    <span class="input-group-text">@</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Username"
+                    />
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"input-group-text"</span><span class="tag">&gt;</span>@<span class="tag">&lt;/span&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>12. Validation</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('val', 'is-valid')">
+                    Valid
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('val', 'is-invalid')">
+                    Invalid
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <input
+                    id="valTarget"
+                    type="text"
+                    class="form-control is-valid"
+                    value="Mark"
+                  />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Error!</div>
+                </div>
+                <pre id="code_val"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>13. Range Input</span></div>
+                <div class="visual-stage stage-block">
+                  <label class="form-label text-white">Example Range</label>
+                  <input type="range" class="form-range" />
+                </div>
+                <pre><span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"range"</span> <span class="attr">class</span>=<span class="val">"form-range"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>14. Switches</span></div>
+                <div class="visual-stage stage-block">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="flexSwitchCheckChecked"
+                      checked
+                    />
+                    <label
+                      class="form-check-label text-white"
+                      for="flexSwitchCheckChecked"
+                      >Toggle this</label
+                    >
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"form-check form-switch"</span><span class="tag">&gt;</span></pre>
+              </div>
+            </div>
+
+            <h2 id="components"><i class="fas fa-cubes"></i> 4. Components</h2>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-header"><span>15. Buttons</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('btn', 'btn-primary')">
+                    Solid
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('btn', 'btn-outline-warning')"
+                  >
+                    Outline
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('btn', 'btn-danger btn-lg')"
+                  >
+                    Large
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('btn', 'btn-success')">
+                    Success
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <button id="btnTarget" class="btn btn-primary">
+                    Click Me
+                  </button>
+                </div>
+                <pre id="code_btn"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>16. Alerts</span></div>
+                <div class="ctrl-group">
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('alert', 'alert-success')"
+                  >
+                    Success
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('alert', 'alert-info')">
+                    Info
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('alert', 'alert-danger')"
+                  >
+                    Danger
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('alert', 'alert-primary')"
+                  >
+                    Primary
+                  </button>
+                </div>
+                <div class="visual-stage stage-block">
+                  <div id="alertTarget" class="alert alert-success m-0">
+                    <i class="fas fa-check-circle"></i> Message sent!
+                  </div>
+                </div>
+                <pre id="code_alert"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>17. Badges</span></div>
+                <div class="visual-stage">
+                  <button class="btn btn-secondary position-relative">
+                    Inbox
+                    <span
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      >99+</span
+                    >
+                  </button>
+                </div>
+                <pre><span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"badge rounded-pill bg-danger"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>18. Cards</span></div>
+                <div class="visual-stage">
+                  <div class="card" style="width: 12rem">
+                    <img
+                      src="https://via.placeholder.com/150x80"
+                      class="card-img-top"
+                      alt="..."
+                    />
+                    <div class="card-body text-dark p-2">
+                      <h6 class="card-title">Card title</h6>
+                      <p class="card-text small">Brief text here.</p>
+                      <a href="#" class="btn btn-primary btn-sm">Go</a>
+                    </div>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"card"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/div&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>19. Modal</span></div>
+                <div class="visual-stage">
+                  <button
+                    type="button"
+                    class="btn btn-light"
+                    data-bs-toggle="modal"
+                    data-bs-target="#liveModal"
+                  >
+                    Launch Modal
+                  </button>
+                </div>
+                <pre><span class="tag">&lt;button</span> <span class="attr">data-bs-toggle</span>=<span class="val">"modal"</span>...<span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>20. Offcanvas</span></div>
+                <div class="visual-stage">
+                  <button
+                    class="btn btn-light"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasExample"
+                  >
+                    Open Sidebar
+                  </button>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"offcanvas offcanvas-start"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>21. Progress</span></div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="75"
+                  oninput="updProg(this.value)"
+                />
+                <div class="visual-stage stage-block">
+                  <div class="progress">
+                    <div
+                      id="progTarget"
+                      class="progress-bar progress-bar-striped progress-bar-animated"
+                      style="width: 75%"
+                    >
+                      75%
+                    </div>
+                  </div>
+                </div>
+                <pre id="code_prog"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>22. Spinners</span></div>
+                <div class="ctrl-group">
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('spin', 'spinner-border')"
+                  >
+                    Border
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('spin', 'spinner-grow')"
+                  >
+                    Grow
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <div
+                    id="spinTarget"
+                    class="spinner-border text-primary"
+                  ></div>
+                </div>
+                <pre id="code_spin"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>23. Carousel</span></div>
+                <div class="visual-stage stage-block p-0">
+                  <div
+                    id="carouselExample"
+                    class="carousel slide"
+                    data-bs-ride="carousel"
+                  >
+                    <div class="carousel-inner">
+                      <div class="carousel-item active">
+                        <div class="bg-secondary p-5 text-center text-white">
+                          Slide 1
+                        </div>
+                      </div>
+                      <div class="carousel-item">
+                        <div class="bg-primary p-5 text-center text-white">
+                          Slide 2
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"carousel slide"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>24. Dropdowns</span></div>
+                <div class="visual-stage">
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-secondary dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                    >
+                      Dropdown
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#">Action</a></li>
+                      <li><a class="dropdown-item" href="#">Another</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;ul</span> <span class="attr">class</span>=<span class="val">"dropdown-menu"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>25. Accordion</span></div>
+                <div class="visual-stage stage-block">
+                  <div class="accordion accordion-flush bg-white rounded">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#acc1"
+                        >
+                          Item #1
+                        </button>
+                      </h2>
+                      <div id="acc1" class="accordion-collapse collapse">
+                        <div class="accordion-body text-dark">
+                          Content here.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"accordion"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>26. Breadcrumb</span></div>
+                <div class="visual-stage stage-block">
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-white p-2 rounded mb-0">
+                      <li class="breadcrumb-item"><a href="#">Home</a></li>
+                      <li class="breadcrumb-item active">Library</li>
+                    </ol>
+                  </nav>
+                </div>
+                <pre><span class="tag">&lt;ol</span> <span class="attr">class</span>=<span class="val">"breadcrumb"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>27. Pagination</span></div>
+                <div class="visual-stage">
+                  <ul class="pagination mb-0">
+                    <li class="page-item disabled">
+                      <a class="page-link">Prev</a>
+                    </li>
+                    <li class="page-item active">
+                      <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="#">Next</a>
+                    </li>
+                  </ul>
+                </div>
+                <pre><span class="tag">&lt;ul</span> <span class="attr">class</span>=<span class="val">"pagination"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>28. List Group</span></div>
+                <div class="visual-stage stage-block">
+                  <ul class="list-group">
+                    <li class="list-group-item active">Active item</li>
+                    <li class="list-group-item">Second item</li>
+                  </ul>
+                </div>
+                <pre><span class="tag">&lt;ul</span> <span class="attr">class</span>=<span class="val">"list-group"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>29. Navs & Tabs</span></div>
+                <div class="visual-stage stage-block">
+                  <ul class="nav nav-pills nav-fill bg-white rounded p-1">
+                    <li class="nav-item">
+                      <a class="nav-link active" href="#">Active</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#">Link</a>
+                    </li>
+                  </ul>
+                </div>
+                <pre><span class="tag">&lt;ul</span> <span class="attr">class</span>=<span class="val">"nav nav-pills"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>30. Toasts</span></div>
+                <div class="visual-stage">
+                  <button class="btn btn-primary" id="toastBtn">
+                    Show Toast
+                  </button>
+                </div>
+                <pre><span class="tag">new</span> bootstrap.Toast(el).show()</pre>
+              </div>
+            </div>
+
+            <h2 id="utils"><i class="fas fa-wrench"></i> 5. Utilities</h2>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-header"><span>31. Backgrounds</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('bg', 'bg-primary')">
+                    Blue
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('bg', 'bg-dark')">
+                    Dark
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('bg', 'bg-gradient bg-success')"
+                  >
+                    Grad
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('bg', 'bg-danger')">
+                    Red
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <div id="bgTarget" class="p-4 text-white rounded bg-primary">
+                    Box
+                  </div>
+                </div>
+                <pre id="code_bg"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>32. Shadows</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('shad', 'shadow-none')">
+                    None
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('shad', 'shadow-sm')">
+                    Small
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('shad', 'shadow-lg')">
+                    Large
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <div
+                    id="shadTarget"
+                    class="p-4 bg-white text-dark rounded shadow-sm"
+                  >
+                    Shadow
+                  </div>
+                </div>
+                <pre id="code_shad"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>33. Borders</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('bord', 'border')">
+                    Thin
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('bord', 'border border-3')"
+                  >
+                    Thick
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('bord', 'border border-danger')"
+                  >
+                    Red
+                  </button>
+                  <button
+                    class="ctrl-btn"
+                    onclick="upd('bord', 'border border-primary')"
+                  >
+                    Blue
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <div
+                    id="bordTarget"
+                    class="p-4 bg-transparent text-white border"
+                  >
+                    Border
+                  </div>
+                </div>
+                <pre id="code_bord"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>34. Text Truncate</span></div>
+                <div class="visual-stage stage-block">
+                  <div
+                    class="text-truncate text-white bg-dark p-2"
+                    style="max-width: 150px"
+                  >
+                    This text is way too long to fit here.
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"text-truncate"</span><span class="tag">&gt;</span></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>35. Opacity</span></div>
+                <div class="ctrl-group">
+                  <button class="ctrl-btn" onclick="upd('op', 'opacity-25')">
+                    25%
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('op', 'opacity-50')">
+                    50%
+                  </button>
+                  <button class="ctrl-btn" onclick="upd('op', 'opacity-100')">
+                    100%
+                  </button>
+                </div>
+                <div class="visual-stage">
+                  <div
+                    id="opTarget"
+                    class="bg-warning p-3 text-dark fw-bold opacity-100"
+                  >
+                    See-through
+                  </div>
+                </div>
+                <pre id="code_op"></pre>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-header"><span>36. Position</span></div>
+                <div class="visual-stage stage-block" style="height: 100px">
+                  <div class="position-relative w-100 h-100 bg-dark border">
+                    <div class="position-absolute top-0 start-0 bg-danger p-1">
+                      TL
+                    </div>
+                    <div
+                      class="position-absolute bottom-0 end-0 bg-success p-1"
+                    >
+                      BR
+                    </div>
+                    <div
+                      class="position-absolute top-50 start-50 translate-middle bg-primary p-1"
+                    >
+                      Center
+                    </div>
+                  </div>
+                </div>
+                <pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"position-absolute..."</span><span class="tag">&gt;</span></pre>
+              </div>
+            </div>
+
+            <div id="exam" style="margin-top: 100px">
+              <h1 class="text-center mb-4">🏆 20 Question Exam</h1>
+              <div id="examContainer" class="d-grid gap-2"></div>
+            </div>
+
+            <div style="height: 100px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="liveModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title">Modal Title</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            This is a Bootstrap modal running inside the lab.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="offcanvas offcanvas-start bg-dark text-white"
+      tabindex="-1"
+      id="offcanvasExample"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Offcanvas</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body">Content for the offcanvas goes here.</div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div
+        id="liveToast"
+        class="toast bg-dark text-white border-secondary"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="toast-header bg-secondary text-white border-secondary">
+          <strong class="me-auto">Bootstrap</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+        <div class="toast-body">Hello, world! This is a toast message.</div>
+      </div>
+    </div>
+
+    <div class="w3-cta">
+      <h2 style="margin: 0 0 10px 0; font-size: 1.4rem">Need More Practice?</h2>
+      <p style="margin: 0; color: #ccc">
+        Explore thousands of Bootstrap tutorials and examples outside this IDE.
+      </p>
+      <a
+        href="https://www.w3schools.com/bootstrap5/"
+        target="_blank"
+        class="w3-btn"
+        >Visit W3Schools</a
+      >
+    </div>
+
+    <footer class="site-footer">
+      <div
+        style="
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        "
+      >
+        <h3 style="color: var(--text-main); margin-bottom: 10px">
+          Contact & Connect
+        </h3>
+        <p>Galle, Sri Lanka • anuththarawickramasekara424@gmail.com</p>
+
+        <div class="social-links">
+          <a
+            href="https://www.linkedin.com/in/a-wickramasekara/"
+            target="_blank"
+            class="social-icon"
+            title="LinkedIn"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="social-icon"
+            title="GitHub"
+            ><i class="fab fa-github"></i
+          ></a>
+          <a
+            href="https://www.fiverr.com/s/gDk39R9"
+            target="_blank"
+            class="social-icon"
+            title="Fiverr"
+            ><span style="font-weight: bold; font-family: sans-serif"
+              >fi</span
+            ></a
+          >
+          <a
+            href="mailto:anuththarawickramasekara424@gmail.com"
+            class="social-icon"
+            title="Email"
+            ><i class="fas fa-envelope"></i
+          ></a>
+          <a
+            href="https://www.codechef.com/users/itz_me_anu"
+            target="_blank"
+            class="social-icon"
+            title="CodeChef"
+            ><i class="fas fa-code"></i
+          ></a>
+        </div>
+
+        <div
+          style="
+            margin-top: 40px;
+            border-top: 1px solid #222;
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+          "
+        >
+          <p style="font-size: 12px; opacity: 0.6">
+            Built by Anuththara Wickramasekara © 2026
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      /* --- SMOOTH SCROLL --- */
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- NAV LOGIC --- */
+      const pill = document.querySelector(".nav-pill");
+      function setActive(el) {
+        document
+          .querySelectorAll(".nav-link-custom")
+          .forEach((n) => n.classList.remove("active"));
+        el.classList.add("active");
+        movePill(el);
+      }
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      // Init pill
+      setTimeout(
+        () => movePill(document.querySelector(".nav-link-custom.active")),
+        100,
+      );
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const active = document.querySelector(".nav-link-custom.active");
+          if (active) movePill(active);
+        });
+
+      /* --- THEME/FULLSCREEN --- */
+      function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+        const icon = document.getElementById("themeIcon");
+        if (document.body.classList.contains("light-mode")) {
+          icon.classList.remove("fa-adjust");
+          icon.classList.add("fa-sun");
+        } else {
+          icon.classList.remove("fa-sun");
+          icon.classList.add("fa-adjust");
+        }
+      }
+      function toggleFullScreen() {
+        const icon = document.getElementById("fsIcon");
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          icon.classList.remove("fa-expand");
+          icon.classList.add("fa-compress");
+        } else {
+          document.exitFullscreen();
+          icon.classList.remove("fa-compress");
+          icon.classList.add("fa-expand");
+        }
+      }
+
+      /* --- CODE GENERATOR --- */
+      function renderCode(id, code) {
+        const html = code
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(
+            /class="/g,
+            '<span class="attr">class</span>=<span class="val">"',
+          )
+          .replace(/id="/g, '<span class="attr">id</span>=<span class="val">"');
+        document.getElementById(id).innerHTML = html;
+      }
+
+      /* --- LAB FUNCTIONS --- */
+      // Generic class updater
+      function upd(id, cls) {
+        const target = document.getElementById(id + "Target");
+        // Clean previous classes if needed, but for simple demos we just reset mostly
+        // This is a simplified approach for the lab
+        if (id === "cont")
+          target.className = `${cls} bg-primary bg-opacity-50 p-3 text-center border border-primary rounded text-white transition`;
+        else if (id === "gut")
+          document.getElementById("gutTarget").className = `row ${cls}`;
+        else if (id === "align")
+          document.getElementById("alignTarget").className =
+            `d-flex ${cls} bg-light bg-opacity-10 border p-2`;
+        else if (id === "txt") target.className = `${cls} m-0`;
+        else if (id === "lead") target.className = `${cls} text-white`;
+        else if (id === "img") target.className = cls;
+        else if (id === "inp") target.className = `form-control ${cls}`;
+        else if (id === "val") target.className = `form-control ${cls}`;
+        else if (id === "btn") target.className = `btn ${cls}`;
+        else if (id === "alert") target.className = `alert ${cls} m-0`;
+        else if (id === "spin") target.className = `${cls} text-primary`;
+        else if (id === "bg")
+          target.className = `p-4 text-white rounded ${cls}`;
+        else if (id === "shad")
+          target.className = `p-4 bg-white text-dark rounded ${cls}`;
+        else if (id === "bord")
+          target.className = `p-4 bg-transparent text-white ${cls}`;
+        else if (id === "op")
+          target.className = `bg-warning p-3 text-dark fw-bold ${cls}`;
+
+        renderCode(`code_${id}`, target.outerHTML);
+      }
+
+      // Specific Functions
+      function updGrid(val) {
+        document.getElementById("gridLeft").className = `col-${val}`;
+        document.getElementById("gridVal").innerText = val;
+        renderCode(
+          "code_grid",
+          `<div class="row">\n  <div class="col-${val}">...</div>\n  <div class="col">...</div>\n</div>`,
+        );
+      }
+
+      function updDisplay(val) {
+        document.getElementById("dispTarget").className = `display-${val} m-0`;
+        renderCode("code_disp", `<h1 class="display-${val}">...</h1>`);
+      }
+
+      function updProg(val) {
+        const el = document.getElementById("progTarget");
+        el.style.width = val + "%";
+        el.innerText = val + "%";
+        renderCode(
+          "code_prog",
+          `<div class="progress-bar" style="width: ${val}%"></div>`,
+        );
+      }
+
+      /* --- TOAST LOGIC --- */
+      const toastTrigger = document.getElementById("toastBtn");
+      const toastLiveExample = document.getElementById("liveToast");
+      if (toastTrigger) {
+        toastTrigger.addEventListener("click", () => {
+          const toast = new bootstrap.Toast(toastLiveExample);
+          toast.show();
+        });
+      }
+
+      /* --- EXAM --- */
+      const questions = [
+        { q: "Which class creates a fixed-width container?", a: ".container" },
+        {
+          q: "Which class creates a full-width container?",
+          a: ".container-fluid",
+        },
+        { q: "How many columns are in the grid system?", a: "12" },
+        { q: "What class adds a margin bottom of 3?", a: ".mb-3" },
+        { q: "Which class makes a table striped?", a: ".table-striped" },
+        { q: "How do you make an image responsive?", a: ".img-fluid" },
+        {
+          q: "What class is used for the primary button color?",
+          a: ".btn-primary",
+        },
+        { q: "Which class hides an element on all screens?", a: ".d-none" },
+        { q: "Which class creates a flexbox container?", a: ".d-flex" },
+        {
+          q: "How do you vertically align flex items center?",
+          a: ".align-items-center",
+        },
+        { q: "What class adds a shadow to a box?", a: ".shadow" },
+        { q: "Which class creates a large modal?", a: ".modal-lg" },
+        { q: "How do you make a list group item active?", a: ".active" },
+        { q: "What class is used for floating labels?", a: ".form-floating" },
+        { q: "Which class makes a navbar sticky at top?", a: ".sticky-top" },
+        { q: "How do you justify text to the center?", a: ".text-center" },
+        { q: "What class colors text red?", a: ".text-danger" },
+        { q: "Which class creates a card wrapper?", a: ".card" },
+        { q: "How do you make a rounded pill badge?", a: ".rounded-pill" },
+        { q: "What class is used for a spinner loader?", a: ".spinner-border" },
+      ];
+
+      const exC = document.getElementById("examContainer");
+      questions.forEach((q, i) => {
+        exC.innerHTML += `
+         <div class="qa-card" onclick="$(this).find('.q-ans').slideToggle()">
+            <div class="q-head"><span>${i + 1}. ${q.q}</span><span>▼</span></div>
+            <div class="q-ans">${q.a}</div>
+         </div>`;
+      });
+
+      // Init First renders
+      upd("cont", "container");
+      updGrid(6);
+      upd("gut", "g-0");
+      upd("align", "justify-content-start");
+      updDisplay(1);
+      upd("txt", "text-primary");
+      upd("lead", "lead");
+      upd("img", "rounded");
+      upd("inp", "");
+      upd("val", "is-valid");
+      upd("btn", "btn-primary");
+      upd("alert", "alert-success");
+      updProg(75);
+      upd("spin", "spinner-border");
+      upd("bg", "bg-primary");
+      upd("shad", "shadow-sm");
+      upd("bord", "border");
+      upd("op", "opacity-100");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1917 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MWD Lecture 03: CSS Master Guide</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- VARIABLES --- */
+      :root {
+        /* Premium Liquid Glass Theme */
+        --ide-bg: rgba(20, 20, 20, 0.6); /* More transparent for glass feel */
+        --ide-border: rgba(255, 255, 255, 0.08);
+        --ide-blur: 40px; /* Heavy blur */
+        --sidebar-bg: rgba(0, 0, 0, 0.3);
+
+        --text-main: #ffffff;
+        --text-dim: #a0a0a0;
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.5);
+
+        --code-bg: rgba(0, 0, 0, 0.5);
+        --nav-bg: rgba(10, 10, 10, 0.7);
+        --pill-bg: rgba(255, 255, 255, 0.15);
+      }
+
+      body.light-mode {
+        --ide-bg: rgba(255, 255, 255, 0.75);
+        --ide-border: rgba(0, 0, 0, 0.1);
+        --sidebar-bg: rgba(255, 255, 255, 0.5);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #0066cc;
+        --code-bg: rgba(240, 240, 240, 0.7);
+        --nav-bg: rgba(255, 255, 255, 0.85);
+        --pill-bg: rgba(0, 0, 0, 0.05);
+      }
+
+      /* --- RESET --- */
+      * {
+        box-sizing: border-box;
+      }
+
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+      .lenis.lenis-smooth [data-lenis-prevent] {
+        overscroll-behavior: contain;
+      }
+      .lenis.lenis-stopped {
+        overflow: hidden;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        /* UPDATED BACKGROUND IMAGE */
+        background: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+          center/cover no-repeat fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 100px;
+      }
+
+      /* --- NAV --- */
+      .glass-nav-container {
+        position: fixed;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        pointer-events: none;
+      }
+      .glass-nav {
+        pointer-events: auto;
+        position: relative;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--ide-border);
+        padding: 6px;
+        border-radius: 60px;
+        display: flex;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link {
+        position: relative;
+        text-decoration: none;
+        color: var(--text-dim);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 28px;
+        border-radius: 50px;
+        z-index: 2;
+        transition: color 0.3s;
+      }
+      .nav-link.active,
+      .nav-link:hover {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        height: calc(100% - 12px);
+        background: var(--pill-bg);
+        border-radius: 50px;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        opacity: 0;
+      }
+
+      /* --- TOP CONTROLS --- */
+      .top-controls {
+        position: fixed;
+        top: 15px;
+        right: 40px;
+        display: flex;
+        gap: 15px;
+        z-index: 1001;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--ide-border);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        backdrop-filter: blur(12px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+        font-size: 16px;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        transform: scale(1.1);
+        border-color: var(--accent);
+      }
+
+      /* --- IDE WINDOW --- */
+      .ide-window {
+        width: 95%;
+        /* CHANGED: Relative position for natural flow scroll */
+        position: relative;
+        top: -22px;
+        margin-bottom: 30px;
+        max-width: 1800px;
+        height: 88vh;
+
+        background: var(--ide-bg);
+        backdrop-filter: blur(var(--ide-blur));
+        -webkit-backdrop-filter: blur(var(--ide-blur));
+        border: 1px solid var(--ide-border);
+        box-shadow:
+          0 40px 100px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.3s;
+      }
+
+      .title-bar {
+        height: 44px;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--ide-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 13px;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .window-controls {
+        position: absolute;
+        left: 18px;
+        display: flex;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .red {
+        background: #ff5f56;
+      }
+      .yellow {
+        background: #ffbd2e;
+      }
+      .green {
+        background: #27c93f;
+      }
+
+      .ide-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .activity-bar {
+        width: 60px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--ide-border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 25px;
+      }
+      .icon {
+        width: 26px;
+        height: 26px;
+        fill: var(--text-dim);
+        opacity: 0.6;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .icon.active {
+        fill: var(--accent);
+        opacity: 1;
+        filter: drop-shadow(0 0 8px var(--accent-glow));
+      }
+
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .content-scroll {
+        height: 100%;
+        overflow-y: auto;
+        padding: 50px;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+      }
+      .content-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .content-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .content-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
+      .content-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* --- TYPOGRAPHY --- */
+      h1 {
+        font-size: 2.2rem;
+        color: var(--text-main);
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--ide-border);
+        padding-bottom: 15px;
+        font-weight: 700;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.6rem;
+        margin-top: 60px;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+      p,
+      li {
+        color: var(--text-dim);
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      strong {
+        color: var(--text-main);
+        font-weight: 600;
+      }
+
+      pre {
+        background: var(--code-bg);
+        padding: 20px;
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #e0e0e0;
+        overflow-x: auto;
+      }
+      code {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #ce9178;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9em;
+      }
+      .tag {
+        color: #569cd6;
+      }
+      .attr {
+        color: #9cdcfe;
+      }
+      .val {
+        color: #ce9178;
+      }
+      .sel {
+        color: #d7ba7d;
+      }
+      .prop {
+        color: #9cdcfe;
+      }
+      .comment {
+        color: #6a9955;
+        font-style: italic;
+      }
+
+      /* --- DEMOS --- */
+      .demo-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--ide-border);
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+      }
+      .control-panel {
+        background: var(--code-bg);
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .col {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .label-title {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: #888;
+        margin-bottom: 8px;
+      }
+      .val-disp {
+        color: var(--accent);
+      }
+
+      input[type="range"] {
+        width: 100%;
+        -webkit-appearance: none;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        outline: none;
+        cursor: grab;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.1s;
+        box-shadow: 0 0 10px var(--accent-glow);
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      /* --- NEW MODERN COLOR PICKER STYLE --- */
+      input[type="color"] {
+        -webkit-appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        width: 100%;
+        height: 40px;
+        border-radius: 8px; /* Black radius look */
+        padding: 4px;
+        background: rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+      input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+      input[type="color"]::-webkit-color-swatch {
+        border: none;
+        border-radius: 4px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+      }
+      input[type="color"]:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+      }
+
+      button {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--ide-border);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      button:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .visual-stage {
+        background: var(--code-bg);
+        border: 1px dashed var(--ide-border);
+        border-radius: 8px;
+        min-height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        background-image: radial-gradient(
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 1px
+        );
+        background-size: 20px 20px;
+      }
+
+      /* RAPID FIRE GRID */
+      .rapid-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .rapid-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--ide-border);
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      /* EXAM SECTION */
+      .qa-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid var(--accent);
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 0 6px 6px 0;
+        transition: 0.2s;
+      }
+      .qa-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .qa-question {
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        /* Longer questions need room */
+        line-height: 1.4;
+      }
+      .qa-answer {
+        display: none;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--ide-border);
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* FOOTER */
+      .site-footer {
+        width: 100%;
+        /* Adjusted positioning for natural flow */
+        position: relative;
+        margin-top: auto;
+        background: #050505;
+        color: #888;
+        padding: 60px 0 30px;
+        border-top: 1px solid #222;
+      }
+      .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .social-icon {
+        width: 40px;
+        height: 40px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 1px solid #333;
+        font-size: 18px;
+      }
+      .social-icon:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* W3Schools CTA */
+      .w3-cta {
+        width: 95%;
+        max-width: 800px;
+        margin: 0 auto 50px auto;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--accent);
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .w3-btn {
+        background: #04aa6d;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 25px;
+        transition: 0.3s;
+        display: inline-block;
+      }
+      .w3-btn:hover {
+        background: #059862;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(4, 170, 109, 0.5);
+      }
+
+      #flexContainer {
+        background: #1a1a1a;
+        border: 1px solid #444;
+        display: flex;
+        overflow: hidden;
+        transition: 0.2s;
+      }
+      .flex-item {
+        background: #dcdcaa;
+        color: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+      }
+
+      /* INTRO POEM STYLE */
+      .css-intro-poem {
+        background: linear-gradient(
+          90deg,
+          rgba(59, 130, 246, 0.1),
+          transparent
+        );
+        border-left: 4px solid var(--accent);
+        padding: 20px;
+        margin-bottom: 40px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.8;
+      }
+      .css-intro-poem span {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="html practice.html" class="nav-link">HTML</a>
+        <a href="css practice.html" class="nav-link">CSS</a>
+        <a href="js practise.html" class="nav-link">JS</a>
+        <a href="jquery practice.html" class="nav-link">Jquery</a>
+        <a href="bootstrap.html" class="nav-link">Bootstrap</a>
+        <a href="php practise.html" class="nav-link">PHP</a>
+      </nav>
+    </div>
+
+    <div class="top-controls">
+      <button class="control-btn" onclick="toggleTheme()">
+        <i class="fas fa-adjust" id="themeIcon"></i>
+      </button>
+      <button class="control-btn" onclick="toggleFullScreen()">
+        <i class="fas fa-expand" id="fsIcon"></i>
+      </button>
+    </div>
+
+    <div class="ide-window">
+      <div class="title-bar">
+        <div class="window-controls">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <span>CSS — Visual Studio Code</span>
+      </div>
+
+      <div class="ide-body">
+        <div class="activity-bar">
+          <svg class="icon active" viewBox="0 0 24 24">
+            <path
+              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+            />
+          </svg>
+          <svg class="icon" viewBox="0 0 24 24">
+            <path
+              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+            />
+          </svg>
+        </div>
+
+        <div class="editor-area">
+          <div class="content-scroll" data-lenis-prevent>
+            <h1>
+              CSS Interactive Guide
+              <span
+                style="font-size: 0.5em; opacity: 0.6; font-weight: 400"
+              ></span>
+            </h1>
+
+            <div class="css-intro-poem">
+              <span>1.1 Cascading Style Sheets paint the web.</span>
+              <span>1.2 Selectors find tags to style correctly.</span>
+              <span>1.3 Properties change how elements look now.</span>
+              <span>1.4 Colors and fonts bring life everywhere.</span>
+              <span>1.5 Layouts organize content for every screen.</span>
+              <span>1.6 Animations make user interfaces feel alive.</span>
+              <span>1.7 Responsive design fits mobile and desktop.</span>
+              <span>1.8 Master these tools to build dreams.</span>
+            </div>
+
+            <h2>1. CSS Connection Methods 🔗</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <button onclick="setConn('inline')">Inline</button>
+                  <button onclick="setConn('internal')">Internal</button>
+                  <button onclick="setConn('external')">External</button>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <p
+                  id="connTarget"
+                  style="font-size: 1.5rem; font-weight: bold; transition: 0.3s"
+                >
+                  Hello World
+                </p>
+              </div>
+              <pre id="codeConn"></pre>
+            </div>
+
+            <h2>2. Colors & Gradients 🌈</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title">Color 1</span>
+                    <input
+                      type="color"
+                      id="c1"
+                      value="#007acc"
+                      oninput="updGrad()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title">Color 2</span>
+                    <input
+                      type="color"
+                      id="c2"
+                      value="#ff00cc"
+                      oninput="updGrad()"
+                    />
+                  </div>
+                </div>
+                <div class="row">
+                  <button onclick="setGradDir(90)">➡ Horizontal</button>
+                  <button onclick="setGradDir(180)">⬇ Vertical</button>
+                  <button onclick="setGradDir(45)">📐 Diagonal</button>
+                </div>
+              </div>
+              <div
+                id="gradientBox"
+                style="
+                  width: 100%;
+                  height: 100px;
+                  border-radius: 6px;
+                  background: linear-gradient(90deg, #007acc, #ff00cc);
+                  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Added modern shadow */
+                "
+              ></div>
+              <pre id="codeGrad"></pre>
+            </div>
+
+            <h2>3. The Box Model 📦</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Padding
+                      <span id="padVal" class="val-disp">20px</span></span
+                    ><input
+                      type="range"
+                      id="padIn"
+                      max="60"
+                      value="20"
+                      oninput="updBox()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Margin
+                      <span id="marVal" class="val-disp">0px</span></span
+                    ><input
+                      type="range"
+                      id="marIn"
+                      max="60"
+                      value="0"
+                      oninput="updBox()"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <div
+                  style="
+                    border: 1px dashed #777;
+                    display: inline-block;
+                    background: rgba(255, 255, 255, 0.05);
+                  "
+                >
+                  <div
+                    id="boxEl"
+                    style="
+                      background: #fff;
+                      color: #000;
+                      padding: 20px;
+                      margin: 0px;
+                    "
+                  >
+                    Content Box
+                  </div>
+                </div>
+              </div>
+              <pre id="codeBox"></pre>
+            </div>
+
+            <h2>4. Flexbox Playground 💪</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Cont Width
+                      <span id="cwVal" class="val-disp">100%</span></span
+                    ><input
+                      type="range"
+                      id="cwIn"
+                      min="30"
+                      max="100"
+                      value="100"
+                      oninput="updFlex()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Item Width
+                      <span id="iwVal" class="val-disp">100px</span></span
+                    ><input
+                      type="range"
+                      id="iwIn"
+                      min="40"
+                      max="150"
+                      value="100"
+                      oninput="updFlex()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Item Height
+                      <span id="ihVal" class="val-disp">60px</span></span
+                    ><input
+                      type="range"
+                      id="ihIn"
+                      min="40"
+                      max="150"
+                      value="60"
+                      oninput="updFlex()"
+                    />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Cont Height
+                      <span id="chVal" class="val-disp">347px</span></span
+                    ><input
+                      type="range"
+                      id="chIn"
+                      min="200"
+                      max="500"
+                      value="347"
+                      oninput="updFlex()"
+                    />
+                  </div>
+                  <div
+                    class="col"
+                    style="display: flex; gap: 10px; align-items: flex-end"
+                  >
+                    <button onclick="addFlexItem()">+ Add</button>
+                    <button onclick="remFlexItem()">- Rem</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <button onclick="setJust('flex-start')">Start</button>
+                  <button onclick="setJust('center')">Center</button>
+                  <button onclick="setJust('space-between')">Space-Btwn</button>
+                  <button onclick="setJust('space-evenly')">Evenly</button>
+                </div>
+                <div class="row">
+                  <button onclick="setAlign('stretch')">Stretch</button>
+                  <button onclick="setAlign('center')">Center</button>
+                  <button onclick="setAlign('flex-start')">Top</button>
+                  <button onclick="setAlign('flex-end')">Bottom</button>
+                </div>
+              </div>
+              <div class="visual-stage" style="padding: 0">
+                <div
+                  id="flexContainer"
+                  style="
+                    width: 100%;
+                    height: 347px;
+                    justify-content: flex-start;
+                    align-items: stretch;
+                  "
+                >
+                  <div class="flex-item" style="width: 100px; height: 60px">
+                    1
+                  </div>
+                  <div class="flex-item" style="width: 100px; height: 60px">
+                    2
+                  </div>
+                  <div class="flex-item" style="width: 100px; height: 60px">
+                    3
+                  </div>
+                </div>
+              </div>
+              <pre id="codeFlex"></pre>
+            </div>
+
+            <h2>5. Rapid Fire CSS Lab 🧪</h2>
+            <p>
+              Master these 16+ properties in the sandbox below. All controls
+              affect the "TARGET" box.
+            </p>
+            <div class="demo-section">
+              <div
+                class="visual-stage"
+                style="min-height: 150px; margin-bottom: 20px"
+              >
+                <div
+                  id="rapidBox"
+                  style="
+                    background: var(--accent);
+                    width: 150px;
+                    height: 150px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    color: white;
+                    transition: 0.3s;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                  "
+                >
+                  TARGET
+                </div>
+              </div>
+
+              <div class="rapid-grid">
+                <div class="rapid-card">
+                  <span class="label-title">Opacity</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="1"
+                    oninput="rf('opacity', this.value)"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Border Radius</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="50"
+                    value="0"
+                    oninput="rf('borderRadius', this.value + '%')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Rotate</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="360"
+                    value="0"
+                    oninput="rf('transform', 'rotate(' + this.value + 'deg)')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Scale</span
+                  ><input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                    oninput="rf('transform', 'scale(' + this.value + ')')"
+                  />
+                </div>
+
+                <div class="rapid-card">
+                  <span class="label-title">Font Size</span
+                  ><input
+                    type="range"
+                    min="10"
+                    max="40"
+                    value="16"
+                    oninput="rf('fontSize', this.value + 'px')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Letter Spacing</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="20"
+                    value="0"
+                    oninput="rf('letterSpacing', this.value + 'px')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Weight</span
+                  ><button onclick="rf('fontWeight', 'normal')">Normal</button
+                  ><button onclick="rf('fontWeight', 'bold')">Bold</button>
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Decoration</span
+                  ><button onclick="rf('textDecoration', 'none')">None</button
+                  ><button onclick="rf('textDecoration', 'underline')">
+                    Line
+                  </button>
+                </div>
+
+                <div class="rapid-card">
+                  <span class="label-title">Border Width</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="20"
+                    value="0"
+                    oninput="rf('border', this.value + 'px solid white')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Box Shadow</span
+                  ><button onclick="rf('boxShadow', 'none')">Off</button
+                  ><button onclick="rf('boxShadow', '0 10px 30px black')">
+                    On
+                  </button>
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Skew X</span
+                  ><input
+                    type="range"
+                    min="-30"
+                    max="30"
+                    value="0"
+                    oninput="rf('transform', 'skewX(' + this.value + 'deg)')"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Invert Filter</span
+                  ><input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="0"
+                    oninput="rf('filter', 'invert(' + this.value + '%)')"
+                  />
+                </div>
+
+                <div class="rapid-card">
+                  <span class="label-title">Mix Blend</span
+                  ><button onclick="rf('mixBlendMode', 'normal')">Norm</button
+                  ><button onclick="rf('mixBlendMode', 'difference')">
+                    Diff
+                  </button>
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Cursor</span
+                  ><button onclick="rf('cursor', 'pointer')">👇</button
+                  ><button onclick="rf('cursor', 'wait')">⏳</button>
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Background</span
+                  ><input
+                    type="color"
+                    value="#3b82f6"
+                    oninput="rf('backgroundColor', this.value)"
+                  />
+                </div>
+                <div class="rapid-card">
+                  <span class="label-title">Visibility</span
+                  ><button onclick="rf('visibility', 'visible')">👁️</button
+                  ><button onclick="rf('visibility', 'hidden')">🚫</button>
+                </div>
+              </div>
+              <pre
+                id="rfCode"
+              ><span class="sel">#target</span> { <span class="prop">...</span> }</pre>
+            </div>
+
+            <h2>6. Text Shadows 👻</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >X Offset
+                      <span id="txVal" class="val-disp">20px</span></span
+                    ><input
+                      type="range"
+                      id="tsx"
+                      min="-50"
+                      max="50"
+                      value="20"
+                      oninput="updText()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Y Offset
+                      <span id="tyVal" class="val-disp">20px</span></span
+                    ><input
+                      type="range"
+                      id="tsy"
+                      min="-50"
+                      max="50"
+                      value="20"
+                      oninput="updText()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Blur <span id="tbVal" class="val-disp">9px</span></span
+                    ><input
+                      type="range"
+                      id="tsb"
+                      min="0"
+                      max="30"
+                      value="9"
+                      oninput="updText()"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <h1
+                  id="textTarget"
+                  style="
+                    font-size: 4em;
+                    border: none;
+                    margin: 0;
+                    color: var(--text-main);
+                  "
+                >
+                  GHOST
+                </h1>
+              </div>
+              <pre id="codeText"></pre>
+            </div>
+
+            <h2>7. Border Radius Morph 🔮</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Top-Left
+                      <span id="tlVal" class="val-disp">100%</span></span
+                    ><input
+                      type="range"
+                      id="tl"
+                      value="100"
+                      oninput="updRad()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Top-Right
+                      <span id="trVal" class="val-disp">0%</span></span
+                    ><input type="range" id="tr" value="0" oninput="updRad()" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Btm-Right
+                      <span id="brVal" class="val-disp">100%</span></span
+                    ><input
+                      type="range"
+                      id="br"
+                      value="100"
+                      oninput="updRad()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Btm-Left
+                      <span id="blVal" class="val-disp">0%</span></span
+                    ><input type="range" id="bl" value="0" oninput="updRad()" />
+                  </div>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <div
+                  id="blob"
+                  style="
+                    width: 150px;
+                    height: 150px;
+                    background: linear-gradient(135deg, #00c6ff, #0072ff);
+                    transition: 0.2s;
+                    border-radius: 100% 0% 100% 0%;
+                  "
+                ></div>
+              </div>
+              <pre id="codeRadBlock"></pre>
+            </div>
+
+            <h2>8. CSS Filters 📸</h2>
+            <div class="demo-section">
+              <div class="control-panel">
+                <div class="row">
+                  <div class="col">
+                    <span class="label-title"
+                      >Blur
+                      <span id="fBlurVal" class="val-disp">0px</span></span
+                    ><input
+                      type="range"
+                      id="fBlur"
+                      max="20"
+                      value="0"
+                      oninput="updFilt()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Grayscale
+                      <span id="fGrayVal" class="val-disp">0%</span></span
+                    ><input
+                      type="range"
+                      id="fGray"
+                      max="100"
+                      value="0"
+                      oninput="updFilt()"
+                    />
+                  </div>
+                  <div class="col">
+                    <span class="label-title"
+                      >Sepia <span id="fSepVal" class="val-disp">0%</span></span
+                    ><input
+                      type="range"
+                      id="fSep"
+                      max="100"
+                      value="0"
+                      oninput="updFilt()"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="visual-stage">
+                <img
+                  id="filtImg"
+                  src="https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  style="width: 250px; border-radius: 8px; transition: 0.2s"
+                />
+              </div>
+              <pre id="codeFilt"></pre>
+            </div>
+
+            <h2>9. Cursor Playground 👆</h2>
+            <div class="demo-section">
+              <div class="rapid-grid">
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: pointer;
+                    border-radius: 6px;
+                  "
+                >
+                  pointer
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: move;
+                    border-radius: 6px;
+                  "
+                >
+                  move
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: text;
+                    border-radius: 6px;
+                  "
+                >
+                  text
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: wait;
+                    border-radius: 6px;
+                  "
+                >
+                  wait
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: help;
+                    border-radius: 6px;
+                  "
+                >
+                  help
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: not-allowed;
+                    border-radius: 6px;
+                  "
+                >
+                  not-allowed
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: crosshair;
+                    border-radius: 6px;
+                  "
+                >
+                  crosshair
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 15px;
+                    text-align: center;
+                    cursor: zoom-in;
+                    border-radius: 6px;
+                  "
+                >
+                  zoom-in
+                </div>
+              </div>
+            </div>
+
+            <h1
+              style="
+                color: #ffbd2e;
+                border: none;
+                text-align: center;
+                margin-top: 60px;
+              "
+            >
+              📝 20 Rapid Questions
+            </h1>
+            <p style="text-align: center; margin-bottom: 30px">
+              Click to reveal (Answers with Code)
+            </p>
+
+            <div class="qa-card">
+              <div class="qa-question">
+                1. What does the acronym CSS officially stand for in web
+                development?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Cascading Style Sheets used for styling.
+                <code>style.css</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                2. How do you correctly select an element by its unique ID in
+                CSS?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Use the hash symbol followed by ID. <code>#header {}</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                3. How do you select elements by their class name in a
+                stylesheet?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Use a dot before the class name. <code>.btn {}</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                4. What behavior does the display: flex property apply to a
+                container?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Enables flexible layout for child elements.
+                <code>display: flex;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                5. What does the justify-content property control in a flex
+                container?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Aligns items along the main axis.
+                <code>justify-content: center;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                6. What does the align-items property control in a flex
+                container?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Aligns items along the cross axis.
+                <code>align-items: center;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                7. What are the four distinct parts that make up the Box
+                Model?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Margin, border, padding, and content.
+                <code>box-sizing: border-box;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                8. How does position: absolute place an element within the
+                document?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Relative to nearest positioned ancestor.
+                <code>position: absolute; top: 0;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                9. How does position: fixed place an element on the user's
+                screen?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Positioned relative to the viewport.
+                <code>position: fixed; bottom: 0;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                10. What does the z-index property control regarding overlapping
+                elements?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Stack order of positioned HTML elements.
+                <code>z-index: 999;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                11. What elements does the asterisk (*) selector target in
+                CSS?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Selects every single element on page.
+                <code>* { margin: 0; }</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                12. What is the reference base for the 'rem' CSS unit size?<span
+                  >▼</span
+                >
+              </div>
+              <div class="qa-answer">
+                Font size of the root element. <code>font-size: 1.5rem;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                13. What does the 'vh' unit represent in CSS sizing terms?<span
+                  >▼</span
+                >
+              </div>
+              <div class="qa-answer">
+                One percent of the viewport height. <code>height: 100vh;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                14. What happens to the layout space when visibility is
+                hidden?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Hidden but preserves the element space.
+                <code>visibility: hidden;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                15. What happens to the layout space when display is set to
+                none?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Removes element completely from layout.
+                <code>display: none;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                16. What is the effect of adding !important to a style
+                rule?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Overrides all other distinct style rules.
+                <code>color: red !important;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                17. What does the transition property do to changing CSS
+                values?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Smoothly changes values over time.
+                <code>transition: all 0.3s;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                18. Can you give a common example of a CSS pseudo-class?<span
+                  >▼</span
+                >
+              </div>
+              <div class="qa-answer">
+                Hover state is a pseudo class.
+                <code>a:hover { color: red; }</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                19. What is the main difference between CSS Grid and CSS
+                Flexbox?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Grid is 2D, Flexbox is 1D.
+                <code>display: grid;</code>
+              </div>
+            </div>
+            <div class="qa-card">
+              <div class="qa-question">
+                20. What is the primary purpose of using Media Queries in
+                CSS?<span>▼</span>
+              </div>
+              <div class="qa-answer">
+                Styles based on device characteristics.
+                <code>@media (max-width: 768px) {}</code>
+              </div>
+            </div>
+
+            <div style="height: 100px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="w3-cta">
+      <h2 style="margin: 0 0 10px 0; font-size: 1.4rem">Need More Practice?</h2>
+      <p style="margin: 0; color: #ccc">
+        Explore thousands of CSS tutorials and examples outside this IDE.
+      </p>
+      <a href="https://www.w3schools.com/css/" target="_blank" class="w3-btn"
+        >Visit W3Schools</a
+      >
+    </div>
+
+    <footer class="site-footer">
+      <div
+        style="
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        "
+      >
+        <h3 style="color: var(--text-main); margin-bottom: 10px">
+          Contact & Connect
+        </h3>
+        <p>Galle, Sri Lanka • anuththarawickramasekara424@gmail.com</p>
+
+        <div class="social-links">
+          <a
+            href="https://www.linkedin.com/in/a-wickramasekara/"
+            target="_blank"
+            class="social-icon"
+            title="LinkedIn"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="social-icon"
+            title="GitHub"
+            ><i class="fab fa-github"></i
+          ></a>
+          <a
+            href="https://www.fiverr.com/s/gDk39R9"
+            target="_blank"
+            class="social-icon"
+            title="Fiverr"
+            ><span style="font-weight: bold; font-family: sans-serif"
+              >fi</span
+            ></a
+          >
+          <a
+            href="mailto:anuththarawickramasekara424@gmail.com"
+            class="social-icon"
+            title="Email"
+            ><i class="fas fa-envelope"></i
+          ></a>
+          <a
+            href="https://www.codechef.com/users/itz_me_anu"
+            target="_blank"
+            class="social-icon"
+            title="CodeChef"
+            ><i class="fas fa-code"></i
+          ></a>
+        </div>
+
+        <div
+          style="
+            margin-top: 40px;
+            border-top: 1px solid #222;
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+          "
+        >
+          <p style="font-size: 12px; opacity: 0.6">
+            Built by Anuththara Wickramasekara © 2026
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* --- LENIS SETUP --- */
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- NAV PILL --- */
+      const navLinks = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      navLinks.forEach((link) =>
+        link.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      const activeLink = document.querySelector(".nav-link.active");
+      if (activeLink) movePill(activeLink);
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const active = document.querySelector(".nav-link.active");
+          if (active) movePill(active);
+        });
+
+      /* --- THEME / FULLSCREEN --- */
+      function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+        const icon = document.getElementById("themeIcon");
+        if (document.body.classList.contains("light-mode")) {
+          icon.classList.remove("fa-adjust");
+          icon.classList.add("fa-sun");
+        } else {
+          icon.classList.remove("fa-sun");
+          icon.classList.add("fa-adjust");
+        }
+      }
+      function toggleFullScreen() {
+        const icon = document.getElementById("fsIcon");
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          icon.classList.remove("fa-expand");
+          icon.classList.add("fa-compress");
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+          icon.classList.remove("fa-compress");
+          icon.classList.add("fa-expand");
+        }
+      }
+
+      /* --- HELPER: RENDER CODE --- */
+      function renderCode(id, html, cssSelector, cssBody) {
+        const escHtml = html
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(
+            /class="/g,
+            '<span class="attr">class</span>=<span class="val">"',
+          )
+          .replace(/id="/g, '<span class="attr">id</span>=<span class="val">"')
+          .replace(/div/g, '<span class="tag">div</span>')
+          .replace(/body/g, '<span class="tag">body</span>')
+          .replace(/h1/g, '<span class="tag">h1</span>')
+          .replace(/img/g, '<span class="tag">img</span>');
+        document.getElementById(id).innerHTML =
+          `${escHtml}\n\n<span class="tag">&lt;style&gt;</span>\n<span class="sel">${cssSelector}</span> {\n${cssBody}\n}\n<span class="tag">&lt;/style&gt;</span>`;
+      }
+
+      /* --- 1. CONNECTION --- */
+      function setConn(mode) {
+        const el = document.getElementById("connTarget");
+        let html = "";
+        // Reset visuals
+        el.style.color = "";
+
+        if (mode === "inline") {
+          el.style.color = "#3b82f6";
+          html = `<span class="tag">&lt;p</span> <span class="attr">style</span>=<span class="val">"color: #3b82f6;"</span><span class="tag">&gt;</span>\n  Hello World\n<span class="tag">&lt;/p&gt;</span>`;
+        } else if (mode === "internal") {
+          el.style.color = "#27c93f";
+          html = `<span class="tag">&lt;style&gt;</span>\n  <span class="sel">p</span> { <span class="prop">color</span>: <span class="val">#27c93f</span>; }\n<span class="tag">&lt;/style&gt;</span>\n\n<span class="tag">&lt;p&gt;</span>Hello World<span class="tag">&lt;/p&gt;</span>`;
+        } else {
+          el.style.color = "#ffbd2e";
+          html = `<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"stylesheet"</span> <span class="attr">href</span>=<span class="val">"style.css"</span><span class="tag">&gt;</span>\n\n<span class="comment">/* style.css */</span>\n<span class="sel">p</span> { <span class="prop">color</span>: <span class="val">#ffbd2e</span>; }`;
+        }
+        document.getElementById("codeConn").innerHTML = html;
+      }
+
+      /* --- 1. GRADIENTS --- */
+      let gDeg = 90;
+      function updGrad() {
+        const c1 = document.getElementById("c1").value;
+        const c2 = document.getElementById("c2").value;
+        document.getElementById("gradientBox").style.background =
+          `linear-gradient(${gDeg}deg, ${c1}, ${c2})`;
+        const html = ` <span class="tag">&lt;body&gt;</span>\n  &lt;div class="gradient-box"&gt;&lt;/div&gt;\n <span class="tag">&lt;/body&gt;</span>`;
+        renderCode(
+          "codeGrad",
+          html,
+          ".gradient-box",
+          `  <span class="prop">background</span>: <span class="val">linear-gradient(${gDeg}deg, ${c1}, ${c2})</span>;`,
+        );
+      }
+      function setGradDir(d) {
+        gDeg = d;
+        updGrad();
+      }
+
+      /* --- 2. BOX MODEL --- */
+      function updBox() {
+        const p = document.getElementById("padIn").value;
+        const m = document.getElementById("marIn").value;
+        const el = document.getElementById("boxEl");
+        el.style.padding = p + "px";
+        el.style.margin = m + "px";
+        document.getElementById("padVal").innerText = p + "px";
+        document.getElementById("marVal").innerText = m + "px";
+        const html = ` <span class="tag">&lt;body&gt;</span>\n  &lt;div class="box"&gt;Content Box&lt;/div&gt;\n <span class="tag">&lt;/body&gt;</span>`;
+        renderCode(
+          "codeBox",
+          html,
+          ".box",
+          `  <span class="prop">padding</span>: <span class="val">${p}px</span>;\n  <span class="prop">margin</span>: <span class="val">${m}px</span>;`,
+        );
+      }
+
+      /* --- 3. FLEXBOX --- */
+      let flexState = { j: "flex-start", a: "stretch" };
+      let fCount = 3;
+      function updFlex() {
+        const cw = document.getElementById("cwIn").value;
+        const iw = document.getElementById("iwIn").value;
+        const ih = document.getElementById("ihIn").value;
+        const ch = document.getElementById("chIn").value;
+        document.getElementById("cwVal").innerText = cw + "%";
+        document.getElementById("iwVal").innerText = iw + "px";
+        document.getElementById("ihVal").innerText = ih + "px";
+        document.getElementById("chVal").innerText = ch + "px";
+        const c = document.getElementById("flexContainer");
+        c.style.width = cw + "%";
+        c.style.height = ch + "px";
+        c.style.justifyContent = flexState.j;
+        c.style.alignItems = flexState.a;
+        document.querySelectorAll(".flex-item").forEach((i) => {
+          i.style.width = iw + "px";
+          i.style.height = ih + "px";
+        });
+        let itemsHtml = "";
+        for (let k = 1; k <= fCount; k++)
+          itemsHtml += `  &lt;div class="item"&gt;${k}&lt;/div&gt;\n`;
+        const html = ` <span class="tag">&lt;body&gt;</span>\n &lt;div class="container"&gt;\n${itemsHtml} &lt;/div&gt;\n <span class="tag">&lt;/body&gt;</span>`;
+        renderCode(
+          "codeFlex",
+          html,
+          ".container",
+          `  <span class="prop">display</span>: <span class="val">flex</span>;\n  <span class="prop">justify-content</span>: <span class="val">${flexState.j}</span>;\n  <span class="prop">align-items</span>: <span class="val">${flexState.a}</span>;\n  <span class="prop">height</span>: <span class="val">${ch}px</span>;`,
+        );
+      }
+      function setJust(v) {
+        flexState.j = v;
+        updFlex();
+      }
+      function setAlign(v) {
+        flexState.a = v;
+        updFlex();
+      }
+      function addFlexItem() {
+        fCount++;
+        const d = document.createElement("div");
+        d.className = "flex-item";
+        d.innerText = fCount;
+        document.getElementById("flexContainer").appendChild(d);
+        updFlex();
+      }
+      function remFlexItem() {
+        if (fCount > 0) {
+          fCount--;
+          document.getElementById("flexContainer").lastElementChild.remove();
+          updFlex();
+        }
+      }
+
+      /* --- 4. RAPID FIRE --- */
+      function rf(prop, val) {
+        document.getElementById("rapidBox").style[prop] = val;
+        document.getElementById("rfCode").innerHTML =
+          `<span class="sel">#target</span> { <span class="prop">${prop
+            .replace(/([A-Z])/g, "-$1")
+            .toLowerCase()}</span>: <span class="val">${val}</span>; }`;
+      }
+
+      /* --- 5. TEXT SHADOWS --- */
+      function updText() {
+        const x = document.getElementById("tsx").value;
+        const y = document.getElementById("tsy").value;
+        const b = document.getElementById("tsb").value;
+        document.getElementById("txVal").innerText = x + "px";
+        document.getElementById("tyVal").innerText = y + "px";
+        document.getElementById("tbVal").innerText = b + "px";
+        const val = `${x}px ${y}px ${b}px rgba(255,255,255,0.5)`;
+        document.getElementById("textTarget").style.textShadow = val;
+        renderCode(
+          "codeText",
+          ` <span class="tag">&lt;body&gt;</span>\n  &lt;h1&gt;GHOST&lt;/h1&gt;\n <span class="tag">&lt;/body&gt;</span>`,
+          "h1",
+          `  <span class="prop">text-shadow</span>: <span class="val">${val}</span>;`,
+        );
+      }
+
+      /* --- 6. BORDER MORPH --- */
+      function updRad() {
+        const tl = document.getElementById("tl").value;
+        const tr = document.getElementById("tr").value;
+        const br = document.getElementById("br").value;
+        const bl = document.getElementById("bl").value;
+        document.getElementById("tlVal").innerText = tl + "%";
+        document.getElementById("trVal").innerText = tr + "%";
+        document.getElementById("brVal").innerText = br + "%";
+        document.getElementById("blVal").innerText = bl + "%";
+        const css = `${tl}% ${tr}% ${br}% ${bl}%`;
+        document.getElementById("blob").style.borderRadius = css;
+        renderCode(
+          "codeRadBlock",
+          ` <span class="tag">&lt;body&gt;</span>\n  &lt;div class="shape"&gt;&lt;/div&gt;\n <span class="tag">&lt;/body&gt;</span>`,
+          ".shape",
+          `  <span class="prop">border-radius</span>: <span class="val">${css}</span>;`,
+        );
+      }
+
+      /* --- 7. FILTERS --- */
+      function updFilt() {
+        const b = document.getElementById("fBlur").value;
+        const g = document.getElementById("fGray").value;
+        const s = document.getElementById("fSep").value;
+        document.getElementById("fBlurVal").innerText = b + "px";
+        document.getElementById("fGrayVal").innerText = g + "%";
+        document.getElementById("fSepVal").innerText = s + "%";
+        const val = `blur(${b}px) grayscale(${g}%) sepia(${s}%)`;
+        document.getElementById("filtImg").style.filter = val;
+        renderCode(
+          "codeFilt",
+          ` <span class="tag">&lt;body&gt;</span>\n  &lt;img src="..." /&gt;\n <span class="tag">&lt;/body&gt;</span>`,
+          "img",
+          `  <span class="prop">filter</span>: <span class="val">${val}</span>;`,
+        );
+      }
+
+      /* INIT */
+      setConn("inline");
+      updGrad();
+      updBox();
+      updFlex();
+      updText();
+      updRad();
+      updFilt();
+      $(".qa-card").click(function () {
+        $(this).find(".qa-answer").slideToggle();
+      });
+    </script>
+  </body>
+</html>

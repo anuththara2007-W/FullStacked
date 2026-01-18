@@ -1,0 +1,1460 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jquery Guide</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* --- VARIABLES (From Source UI) --- */
+      :root {
+        /* Premium Liquid Glass Theme */
+        --ide-bg: rgba(20, 20, 20, 0.6);
+        --ide-border: rgba(255, 255, 255, 0.08);
+        --ide-blur: 40px;
+        --sidebar-bg: rgba(0, 0, 0, 0.3);
+
+        --text-main: #ffffff;
+        --text-dim: #a0a0a0;
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.5);
+
+        --code-bg: rgba(0, 0, 0, 0.5);
+        --nav-bg: rgba(10, 10, 10, 0.7);
+        --pill-bg: rgba(255, 255, 255, 0.15);
+      }
+
+      body.light-mode {
+        --ide-bg: rgba(255, 255, 255, 0.75);
+        --ide-border: rgba(0, 0, 0, 0.1);
+        --sidebar-bg: rgba(255, 255, 255, 0.5);
+        --text-main: #1a1a1a;
+        --text-dim: #555555;
+        --accent: #0066cc;
+        --code-bg: rgba(240, 240, 240, 0.7);
+        --nav-bg: rgba(255, 255, 255, 0.85);
+        --pill-bg: rgba(0, 0, 0, 0.05);
+      }
+
+      /* --- RESET --- */
+      * {
+        box-sizing: border-box;
+      }
+
+      html.lenis,
+      html.lenis body {
+        height: auto;
+      }
+      .lenis.lenis-smooth {
+        scroll-behavior: auto !important;
+      }
+      .lenis.lenis-smooth [data-lenis-prevent] {
+        overscroll-behavior: contain;
+      }
+      .lenis.lenis-stopped {
+        overflow: hidden;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        /* UPDATED BACKGROUND IMAGE */
+        background: url("https://images.unsplash.com/photo-1620207418302-439b387441b0?q=80&w=1267&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+          center/cover no-repeat fixed;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 100px;
+      }
+
+      /* --- NAV UI --- */
+      .glass-nav-container {
+        position: fixed;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+        pointer-events: none;
+      }
+      .glass-nav {
+        pointer-events: auto;
+        position: relative;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--ide-border);
+        padding: 6px;
+        border-radius: 60px;
+        display: flex;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+      .nav-link {
+        position: relative;
+        text-decoration: none;
+        color: var(--text-dim);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 28px;
+        border-radius: 50px;
+        z-index: 2;
+        transition: color 0.3s;
+      }
+      .nav-link.active,
+      .nav-link:hover {
+        color: var(--text-main);
+      }
+      .nav-pill {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        height: calc(100% - 12px);
+        background: var(--pill-bg);
+        border-radius: 50px;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        opacity: 0;
+      }
+
+      /* --- TOP CONTROLS --- */
+      .top-controls {
+        position: fixed;
+        top: 15px;
+        right: 40px;
+        display: flex;
+        gap: 15px;
+        z-index: 1001;
+      }
+      .control-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--ide-border);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        backdrop-filter: blur(12px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+        font-size: 16px;
+      }
+      .control-btn:hover {
+        background: var(--accent);
+        transform: scale(1.1);
+        border-color: var(--accent);
+      }
+
+      /* --- IDE WINDOW UI --- */
+      .ide-window {
+        width: 95%;
+        /* Relative position for natural flow */
+        position: relative;
+        top: -22px;
+        margin-bottom: 30px;
+        max-width: 1800px;
+        height: 88vh;
+
+        background: var(--ide-bg);
+        backdrop-filter: blur(var(--ide-blur));
+        -webkit-backdrop-filter: blur(var(--ide-blur));
+        border: 1px solid var(--ide-border);
+        box-shadow:
+          0 40px 100px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.3s;
+      }
+
+      .title-bar {
+        height: 44px;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--ide-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 13px;
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .window-controls {
+        position: absolute;
+        left: 18px;
+        display: flex;
+        gap: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .red {
+        background: #ff5f56;
+      }
+      .yellow {
+        background: #ffbd2e;
+      }
+      .green {
+        background: #27c93f;
+      }
+
+      .ide-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .activity-bar {
+        width: 60px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--ide-border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 25px;
+      }
+      .icon {
+        width: 26px;
+        height: 26px;
+        fill: var(--text-dim);
+        opacity: 0.6;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .icon.active {
+        fill: var(--accent);
+        opacity: 1;
+        filter: drop-shadow(0 0 8px var(--accent-glow));
+      }
+
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .content-scroll {
+        height: 100%;
+        overflow-y: auto;
+        padding: 50px;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+      }
+      .content-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .content-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .content-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
+      .content-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* --- TYPOGRAPHY & JQUERY SPECIFIC CONTENT STYLES --- */
+      h1 {
+        font-size: 2.2rem;
+        color: var(--text-main);
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--ide-border);
+        padding-bottom: 15px;
+        font-weight: 700;
+      }
+      h2 {
+        color: var(--accent);
+        font-size: 1.6rem;
+        margin-top: 60px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        border-left: 4px solid var(--accent);
+        padding-left: 15px;
+      }
+      h3 {
+        font-weight: 400;
+        color: #dcdcaa;
+        margin-top: 35px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.1em;
+      }
+      p,
+      li {
+        color: var(--text-dim);
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      strong {
+        color: var(--text-main);
+        font-weight: 600;
+      }
+
+      /* Code Blocks */
+      pre {
+        background: var(--code-bg);
+        padding: 20px;
+        border: 1px solid var(--ide-border);
+        border-radius: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #e0e0e0;
+        overflow-x: auto;
+      }
+      code {
+        color: #9cdcfe;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      /* Highlight/Syntax Boxes (Adapted for Glass Theme) */
+      .highlight-box,
+      .syntax-box {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid var(--ide-border);
+      }
+      .highlight-box {
+        border-left: 4px solid var(--accent);
+      }
+      .syntax-box {
+        border: 1px dashed #dcdcaa;
+        color: #dcdcaa;
+      }
+
+      /* Demos */
+      .demo-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--ide-border);
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .demo-box {
+        min-width: 200px;
+        padding: 15px 25px;
+        background: linear-gradient(135deg, var(--accent), #2b85c2);
+        color: white;
+        text-align: center;
+        margin-top: 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* Buttons */
+      button {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--ide-border);
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+      button:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      /* Exercise Cards */
+      .exercise-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--ide-border);
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+      .exercise-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .exercise-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, #c586c0, var(--accent));
+      }
+      .exercise-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .exercise-title {
+        color: #c586c0;
+        font-weight: 700;
+        font-size: 1.1em;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .answer-area {
+        display: none;
+        margin-top: 20px;
+        border-top: 1px dashed var(--ide-border);
+        padding-top: 20px;
+      }
+      .show-answer-btn {
+        background: rgba(39, 201, 63, 0.2);
+        border: 1px solid #27c93f;
+        color: #fff;
+      }
+      .show-answer-btn:hover {
+        background: #27c93f;
+      }
+
+      /* --- FOOTER UI --- */
+      .site-footer {
+        width: 100%;
+        position: relative;
+        margin-top: auto;
+        background: #050505;
+        color: #888;
+        padding: 60px 0 30px;
+        border-top: 1px solid #222;
+      }
+      .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .social-icon {
+        width: 40px;
+        height: 40px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 1px solid #333;
+        font-size: 18px;
+      }
+      .social-icon:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .w3-cta {
+        width: 95%;
+        max-width: 800px;
+        margin: 0 auto 50px auto;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--accent);
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .w3-btn {
+        background: #04aa6d;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 25px;
+        transition: 0.3s;
+        display: inline-block;
+      }
+      .w3-btn:hover {
+        background: #059862;
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(4, 170, 109, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glass-nav-container">
+      <nav class="glass-nav">
+        <div class="nav-pill"></div>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="html practice.html" class="nav-link active">HTML</a>
+        <a href="css practice.html" class="nav-link">CSS</a>
+        <a href="js practise.html" class="nav-link">JS</a>
+        <a href="jquery practice.html" class="nav-link">Jquery</a>
+        <a href="bootstrap.html" class="nav-link">Bootstrap</a>
+        <a href="php practise.html" class="nav-link">PHP</a>
+      </nav>
+    </div>
+
+    <div class="top-controls">
+      <button class="control-btn" onclick="toggleTheme()">
+        <i class="fas fa-adjust" id="themeIcon"></i>
+      </button>
+      <button class="control-btn" onclick="toggleFullScreen()">
+        <i class="fas fa-expand" id="fsIcon"></i>
+      </button>
+    </div>
+
+    <div class="ide-window">
+      <div class="title-bar">
+        <div class="window-controls">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <span>Jquery — Visual Studio Code</span>
+      </div>
+
+      <div class="ide-body">
+        <div class="activity-bar">
+          <svg class="icon active" viewBox="0 0 24 24">
+            <path
+              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+            />
+          </svg>
+          <svg class="icon" viewBox="0 0 24 24">
+            <path
+              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+            />
+          </svg>
+        </div>
+
+        <div class="editor-area">
+          <div class="content-scroll" data-lenis-prevent>
+            <h1>Complete jQuery Guide - Simple & Easy</h1>
+
+            <div class="intro">
+              <h2>1. What is jQuery?</h2>
+              <p>
+                <strong>jQuery</strong> is a
+                <strong>JavaScript library</strong> that makes coding easier and
+                faster. Think of it like a toolbox that helps you do cool things
+                on websites without writing lots of complicated code!
+              </p>
+            </div>
+
+            <h2>2. Getting Started with jQuery</h2>
+
+            <h3>How to Add jQuery to Your Page</h3>
+            <pre><code>&lt;!-- Add this line in your HTML &lt;head&gt; section --&gt;
+&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"&gt;&lt;/script&gt;</code></pre>
+
+            <h3>🌟 Complete Example Structure</h3>
+            <p>
+              Here is how the <code>&lt;body&gt;</code>, elements, and script
+              work together:
+            </p>
+            <pre><code>&lt;/head&gt;
+&lt;body&gt;
+
+&lt;p id="para"&gt;This is a paragraph&lt;/p&gt;
+
+&lt;button id="hideBtn"&gt;Hide button&lt;/button&gt;
+&lt;button id="showBtn"&gt;Show button&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+  $("#hideBtn").click(function(){
+    $("#para").hide();
+    alert("Paragraph Hidden");
+  });
+
+  $("#showBtn").dblclick(function(){
+    $("#para").show();
+  });
+
+});
+&lt;/script&gt;</code></pre>
+
+            <h3>Basic Syntax</h3>
+            <div class="syntax-box">
+              <strong>$(selector).action()</strong>
+            </div>
+            <ul>
+              <li><strong>$</strong> = jQuery magic symbol</li>
+              <li><strong>selector</strong> = finds HTML elements</li>
+              <li>
+                <strong>action()</strong> = does something to those elements
+              </li>
+            </ul>
+
+            <h2>3. jQuery Selectors (Finding Elements)</h2>
+
+            <h3>1. Basic Selectors</h3>
+            <div class="highlight-box">
+              <p>
+                <strong>Element Selector</strong> - Finds elements by tag name
+              </p>
+              <pre><code>$("p")        // Finds all paragraphs
+$("div")      // Finds all divs
+$("button")    // Finds all buttons</code></pre>
+            </div>
+
+            <div class="highlight-box">
+              <p><strong>ID Selector</strong> - Finds element by ID (use #)</p>
+              <pre><code>$("#myId")     // Finds element with id="myId"</code></pre>
+            </div>
+
+            <div class="highlight-box">
+              <p>
+                <strong>Class Selector</strong> - Finds elements by class (use
+                .)
+              </p>
+              <pre><code>$(".myClass")  // Finds all elements with class="myClass"</code></pre>
+            </div>
+
+            <h3>2. Position Selectors</h3>
+            <pre><code>$("p:first")      // First paragraph
+$("p:last")       // Last paragraph
+$("li:even")      // Even numbered list items (0, 2, 4...)
+$("li:odd")       // Odd numbered list items (1, 3, 5...)
+$("p:eq(2)")      // Third paragraph (counting starts at 0)</code></pre>
+
+            <h2>4. jQuery Effects (Making Things Move!)</h2>
+
+            <h3>1. Hide and Show</h3>
+            <pre><code>$("#box").hide();        // Makes element disappear instantly
+$("#box").show();        // Makes element appear instantly
+$("#box").toggle();      // If visible, hide it. If hidden, show it!
+
+// With Speed
+$("#box").hide("slow");     // Disappears slowly
+$("#box").show("fast");     // Appears quickly
+$("#box").hide(1000);       // Takes 1000 milliseconds (1 second)</code></pre>
+
+            <div class="demo-section">
+              <h4>👉 Try It Yourself - Hide/Show Demo</h4>
+              <div>
+                <button id="hideBtn1">Hide Box</button>
+                <button id="showBtn1">Show Box</button>
+                <button id="toggleBtn1">Toggle Box</button>
+              </div>
+              <div class="demo-box" id="demoBox1">
+                I'm a Demo Box! 📦 Click buttons above!
+              </div>
+            </div>
+
+            <h3>2. Fade Effects (Smooth Disappearing) ✨</h3>
+            <pre><code>$("#box").fadeIn();           // Appears with default speed
+$("#box").fadeIn("slow");     // Appears slowly
+$("#box").fadeOut("fast");    // Disappears quickly
+$("#box").fadeToggle();       // Switches between fadeIn and fadeOut
+$("#box").fadeTo("slow", 0.5); // Fade to 50% transparent</code></pre>
+
+            <div class="demo-section">
+              <h4>👉 Try It Yourself - Fade Effects Demo</h4>
+              <div>
+                <button id="fadeInBtn">Fade In</button>
+                <button id="fadeOutBtn">Fade Out</button>
+                <button id="fadeToggleBtn">Fade Toggle</button>
+                <button id="fadeToBtn">Fade to 30%</button>
+              </div>
+              <div
+                class="demo-box"
+                id="fadeBox"
+                style="display: none; background: #4ec9b0"
+              >
+                Watch me fade! ✨
+              </div>
+            </div>
+
+            <h3>3. Slide Effects (Up and Down Movement) 📊</h3>
+            <pre><code>$("#menu").slideDown("slow");   // Slides element down to show it
+$("#menu").slideUp("fast");     // Slides element up to hide it
+$("#menu").slideToggle();       // Slides up or down</code></pre>
+
+            <div class="demo-section">
+              <h4>👉 Try It Yourself - Slide Demo</h4>
+              <button id="slideBtn">Click to Toggle Menu</button>
+              <div
+                id="slideMenu"
+                style="
+                  display: none;
+                  background: rgba(30, 30, 30, 0.8);
+                  border: 1px solid #444;
+                  color: white;
+                  padding: 20px;
+                  border-radius: 10px;
+                  margin-top: 10px;
+                "
+              >
+                <p>🍔 Menu Item 1</p>
+                <p>🍕 Menu Item 2</p>
+                <p>🍰 Menu Item 3</p>
+              </div>
+            </div>
+
+            <h3>4. Delay & Chaining ⏱️</h3>
+            <pre><code>// Chain multiple effects with delays
+$("#box")
+    .fadeIn("slow")          // First: Fade in
+    .delay(2000)             // Then: Wait 2 seconds
+    .fadeOut("slow");        // Finally: Fade out</code></pre>
+
+            <div class="demo-section">
+              <h4>👉 Try It Yourself - Delay Demo</h4>
+              <button id="delayBtn">Start Sequential Animation</button>
+              <div class="demo-box" id="delayBox1" style="background: #e74c3c">
+                Box 1 🟥 - Fades immediately
+              </div>
+              <div class="demo-box" id="delayBox2" style="background: #007acc">
+                Box 2 🟦 - Waits 1 second
+              </div>
+              <div class="demo-box" id="delayBox3" style="background: #2ecc71">
+                Box 3 🟩 - Waits 2 seconds
+              </div>
+            </div>
+
+            <h3>5. Custom Animation 🎬</h3>
+            <pre><code>$("#box").animate({
+    left: '250px',
+    opacity: '0.5',
+    height: '150px',
+    width: '150px'
+}, "slow");</code></pre>
+
+            <div class="demo-section">
+              <h4>👉 Try It Yourself - Animation Demo</h4>
+              <div>
+                <button id="animateBtn">Animate Me!</button>
+                <button id="resetBtn">Reset</button>
+              </div>
+              <div
+                class="demo-box"
+                id="animateBox"
+                style="position: relative; background: #ce9178"
+              >
+                Animate Me! 🚀
+              </div>
+            </div>
+
+            <h2>🛠️ jQuery HTML/CSS Manipulation</h2>
+
+            <h3>Get and Set Content</h3>
+            <div class="highlight-box">
+              <pre><code>// text() - Get or set text content
+$("#myDiv").text();              
+$("#myDiv").text("New text!");   
+
+// html() - Get or set HTML content
+$("#myDiv").html();                    
+$("#myDiv").html("&lt;b&gt;Bold text!&lt;/b&gt;"); 
+
+// val() - Get or set form field values
+$("input").val();              
+$("input").val("New value");</code></pre>
+            </div>
+
+            <div
+              style="
+                margin-top: 80px;
+                padding-top: 40px;
+                border-top: 2px dashed #444;
+              "
+            >
+              <h1 style="color: #ffbd2e; border: none; text-align: center">
+                📝 Practice Exercises & Solutions
+              </h1>
+              <p style="text-align: center; margin-bottom: 40px">
+                Test your skills below. Click the green button to see the code!
+              </p>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title">Exercise 01: Hide & Alert</span>
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p><strong>Goal:</strong> Write a jQuery program to:</p>
+                <ul>
+                  <li>
+                    Click the <strong>"Hide Button"</strong> to hide a paragraph
+                    and display an alert "Paragraph Hidden".
+                  </li>
+                  <li>
+                    Display the same paragraph again on the
+                    <strong>double-click</strong> event of a "Show Button".
+                  </li>
+                </ul>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;p id="myP"&gt;This is a paragraph&lt;/p&gt;
+
+&lt;button id="hideBtn"&gt;Hide Button&lt;/button&gt;
+&lt;button id="showBtn"&gt;Show Button&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#hideBtn").click(function(){
+        $("#myP").hide();
+        alert("Paragraph Hidden");
+    });
+
+    $("#showBtn").dblclick(function(){
+        $("#myP").show();
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title">Exercise 02: Slide Up & Down</span>
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p><strong>Goal:</strong> Write a jQuery program to:</p>
+                <ul>
+                  <li>Click the "slide-up" button to slide an image up.</li>
+                  <li>
+                    Click the "slide-down" button to slide the image down.
+                  </li>
+                </ul>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;img id="myImg" src="image.jpg" width="200"&gt;
+&lt;br&gt;
+&lt;button id="upBtn"&gt;Slide Up&lt;/button&gt;
+&lt;button id="downBtn"&gt;Slide Down&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#upBtn").click(function(){
+        $("#myImg").slideUp();
+    });
+
+    $("#downBtn").click(function(){
+        $("#myImg").slideDown();
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title">Exercise 03: Toggle Fade</span>
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Write a jQuery program to toggle a
+                  paragraph between <code>fadeIn</code> and
+                  <code>fadeOut</code> for a button click event.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;button id="toggleBtn"&gt;Toggle Fade&lt;/button&gt;
+&lt;p id="text"&gt;Hello World&lt;/p&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#toggleBtn").click(function(){
+        $("#text").fadeToggle("slow");
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 04: Change CSS Color</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> When a button is clicked, change the
+                  text color of all <code>&lt;h1&gt;</code> elements to red.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;h1&gt;Heading 1&lt;/h1&gt;
+&lt;h1&gt;Heading 2&lt;/h1&gt;
+
+&lt;button id="colorBtn"&gt;Change Color&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#colorBtn").click(function(){
+        $("h1").css("color", "red");
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 05: Append List Item</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Add a new item "New Item" to the end of
+                  an ordered list <code>&lt;ol&gt;</code> when a button is
+                  clicked.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;ol id="myList"&gt;
+    &lt;li&gt;Item 1&lt;/li&gt;
+    &lt;li&gt;Item 2&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;button id="addBtn"&gt;Add Item&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#addBtn").click(function(){
+        $("#myList").append("&lt;li&gt;New Item&lt;/li&gt;");
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title">Exercise 06: Get Input Value</span>
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Get the value from an input field and
+                  show it in an alert box when a button is clicked.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;input type="text" id="nameInput" value="John Doe"&gt;
+&lt;button id="btn"&gt;Show Value&lt;/button&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#btn").click(function(){
+        var val = $("#nameInput").val();
+        alert(val);
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 07: Mouse Enter/Leave</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Show an alert "Entered!" when the mouse
+                  enters a div, and "Left!" when it leaves.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;div id="myDiv" style="width:100px; height:100px; background:blue;"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#myDiv").mouseenter(function(){
+        alert("Entered!");
+    });
+
+    $("#myDiv").mouseleave(function(){
+        alert("Left!");
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 08: Add Class on Hover</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Add a CSS class named "highlight" to a
+                  div when hovered, and remove it when the mouse leaves.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;style&gt;
+    .highlight { background-color: yellow; }
+&lt;/style&gt;
+
+&lt;div id="box"&gt;Hover over me!&lt;/div&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#box").hover(
+        function(){ $(this).addClass("highlight"); }, // Mouse In
+        function(){ $(this).removeClass("highlight"); } // Mouse Out
+    );
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title">Exercise 09: Animate Width</span>
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Animate a div to increase its width to
+                  500px over 2 seconds (2000ms).
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;button id="animBtn"&gt;Start Animation&lt;/button&gt;
+&lt;div id="box" style="background:red; height:100px; width:100px;"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#animBtn").click(function(){
+        $("#box").animate({width: '500px'}, 2000);
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 10: Click to Hide Self</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Write a script where clicking on any
+                  <code>&lt;p&gt;</code> tag makes that specific paragraph hide
+                  itself.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;p&gt;Click me to hide me!&lt;/p&gt;
+&lt;p&gt;Click me too!&lt;/p&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("p").click(function(){
+        $(this).hide();
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 11: Set HTML Content</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Change the content of a div with
+                  <code>id="content"</code> to be bold text saying "Hello
+                  jQuery" when clicked.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;div id="content"&gt;Click to change my text&lt;/div&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#content").click(function(){
+        $(this).html("&lt;b&gt;Hello jQuery&lt;/b&gt;");
+    });
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span class="exercise-title"
+                  >Exercise 12: Sequential Animation</span
+                >
+                <button class="show-answer-btn">Show Answer</button>
+              </div>
+              <div class="exercise-q">
+                <p>
+                  <strong>Goal:</strong> Chain 3 effects: Slide Up, then wait 1
+                  second, then Slide Down.
+                </p>
+              </div>
+              <div class="answer-area">
+                <pre><code>&lt;body&gt;
+
+&lt;div id="box" style="width:100px; height:100px; background:green;"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+$(document).ready(function(){
+
+    $("#box")
+        .slideUp()
+        .delay(1000)
+        .slideDown();
+
+});
+&lt;/script&gt;
+
+&lt;/body&gt;</code></pre>
+              </div>
+            </div>
+
+            <div style="height: 100px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="w3-cta">
+      <h2
+        style="margin: 0 0 10px 0; font-size: 1.4rem; border: none; padding: 0"
+      >
+        Need More Practice?
+      </h2>
+      <p style="margin: 0; color: #ccc">
+        Explore thousands of jQuery tutorials and examples outside this IDE.
+      </p>
+      <a
+        href="https://www.w3schools.com/jquery/default.asp"
+        target="_blank"
+        class="w3-btn"
+        >Visit W3Schools</a
+      >
+    </div>
+
+    <footer class="site-footer">
+      <div
+        style="
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        "
+      >
+        <h3 style="color: var(--text-main); margin-bottom: 10px">
+          Contact & Connect
+        </h3>
+        <p>Galle, Sri Lanka • anuththarawickramasekara424@gmail.com</p>
+
+        <div class="social-links">
+          <a
+            href="https://www.linkedin.com/in/a-wickramasekara/"
+            target="_blank"
+            class="social-icon"
+            title="LinkedIn"
+            ><i class="fab fa-linkedin-in"></i
+          ></a>
+          <a
+            href="https://github.com/anuththara2007-W"
+            target="_blank"
+            class="social-icon"
+            title="GitHub"
+            ><i class="fab fa-github"></i
+          ></a>
+          <a
+            href="https://www.fiverr.com/s/gDk39R9"
+            target="_blank"
+            class="social-icon"
+            title="Fiverr"
+            ><span style="font-weight: bold; font-family: sans-serif"
+              >fi</span
+            ></a
+          >
+          <a
+            href="mailto:anuththarawickramasekara424@gmail.com"
+            class="social-icon"
+            title="Email"
+            ><i class="fas fa-envelope"></i
+          ></a>
+          <a
+            href="https://www.codechef.com/users/itz_me_anu"
+            target="_blank"
+            class="social-icon"
+            title="CodeChef"
+            ><i class="fas fa-code"></i
+          ></a>
+        </div>
+
+        <div
+          style="
+            margin-top: 40px;
+            border-top: 1px solid #222;
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+          "
+        >
+          <p style="font-size: 12px; opacity: 0.6">
+            Built by Anuththara Wickramasekara © 2026
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* --- LENIS SETUP --- */
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      /* --- NAV PILL --- */
+      const navLinks = document.querySelectorAll(".nav-link");
+      const pill = document.querySelector(".nav-pill");
+      function movePill(el) {
+        pill.style.opacity = "1";
+        pill.style.width = `${el.offsetWidth}px`;
+        pill.style.left = `${el.offsetLeft}px`;
+      }
+      navLinks.forEach((link) =>
+        link.addEventListener("mouseenter", (e) => movePill(e.target)),
+      );
+      const activeLink = document.querySelector(".nav-link.active");
+      if (activeLink) movePill(activeLink);
+      document
+        .querySelector(".glass-nav")
+        .addEventListener("mouseleave", () => {
+          const active = document.querySelector(".nav-link.active");
+          if (active) movePill(active);
+        });
+
+      /* --- THEME / FULLSCREEN --- */
+      function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+        const icon = document.getElementById("themeIcon");
+        if (document.body.classList.contains("light-mode")) {
+          icon.classList.remove("fa-adjust");
+          icon.classList.add("fa-sun");
+        } else {
+          icon.classList.remove("fa-sun");
+          icon.classList.add("fa-adjust");
+        }
+      }
+      function toggleFullScreen() {
+        const icon = document.getElementById("fsIcon");
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          icon.classList.remove("fa-expand");
+          icon.classList.add("fa-compress");
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+          icon.classList.remove("fa-compress");
+          icon.classList.add("fa-expand");
+        }
+      }
+
+      // --- EXISTING JQUERY LOGIC ---
+      $(document).ready(function () {
+        // --- DEMO LOGIC ---
+
+        // Hide/Show
+        $("#hideBtn1").click(function () {
+          $("#demoBox1").hide("slow");
+        });
+        $("#showBtn1").click(function () {
+          $("#demoBox1").show("slow");
+        });
+        $("#toggleBtn1").click(function () {
+          $("#demoBox1").toggle("slow");
+        });
+
+        // Fade
+        $("#fadeInBtn").click(function () {
+          $("#fadeBox").fadeIn("slow");
+        });
+        $("#fadeOutBtn").click(function () {
+          $("#fadeBox").fadeOut("slow");
+        });
+        $("#fadeToggleBtn").click(function () {
+          $("#fadeBox").fadeToggle("slow");
+        });
+        $("#fadeToBtn").click(function () {
+          $("#fadeBox").show().fadeTo("slow", 0.3);
+        });
+
+        // Slide
+        $("#slideBtn").click(function () {
+          $("#slideMenu").slideToggle("slow");
+        });
+
+        // Delay Demo
+        $("#delayBtn").click(function () {
+          $("#delayBox1, #delayBox2, #delayBox3").show().css("opacity", 1);
+          $("#delayBox1").fadeOut("slow");
+          $("#delayBox2").delay(1000).fadeOut("slow");
+          $("#delayBox3").delay(2000).fadeOut("slow");
+        });
+
+        // Animation
+        $("#animateBtn").click(function () {
+          $("#animateBox").animate(
+            {
+              opacity: "0.5",
+              height: "200px",
+              width: "90%",
+            },
+            "slow",
+          );
+        });
+        $("#resetBtn").click(function () {
+          $("#animateBox").css({ opacity: "1", height: "", width: "" });
+        });
+
+        // --- EXERCISE SHOW ANSWER LOGIC ---
+        $(".show-answer-btn").click(function () {
+          var answerArea = $(this).parent().nextAll(".answer-area").first();
+          answerArea.slideToggle();
+
+          // Button Toggle State Color
+          if ($(this).text().includes("Show")) {
+            $(this).text("Hide Answer");
+            $(this).css({
+              background: "rgba(229, 57, 53, 0.2)",
+              "border-color": "#e53935",
+            });
+          } else {
+            $(this).text("Show Answer");
+            $(this).css({
+              background: "rgba(39, 201, 63, 0.2)",
+              "border-color": "#4caf50",
+            });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
